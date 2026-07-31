@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from 'electron';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import windowStateKeeper from 'electron-window-state';
@@ -17,6 +17,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  */
 const PROTOCOL = 'eveauth-viator';
 const UPDATE_CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000;
+
+/**
+ * The window has no native caption bar: the UI's own `.titlebar` fills that space and Windows
+ * paints only the minimize/maximize/close buttons over the top-right of the page. Colors and
+ * height mirror `.titlebar` in `client/src/theme.css` (`--bg-elev` / `--text`, 46px) — they are
+ * duplicated because Windows draws the overlay itself and can't read the page's CSS.
+ */
+const TITLE_BAR_OVERLAY = { color: '#161b22', symbolColor: '#d6dae0', height: 46 };
 
 /** `--dev-url=…` points the window at the Vite dev server and skips the embedded server. */
 const devUrl = process.argv.find((a) => a.startsWith('--dev-url='))?.split('=')[1];
@@ -49,6 +57,8 @@ if (!app.requestSingleInstanceLock()) {
 async function boot(): Promise<void> {
   await app.whenReady();
   registerProtocolClient();
+  // No File/Edit/View bar — the UI's own titlebar is the only chrome. See wireShortcuts().
+  Menu.setApplicationMenu(null);
 
   if (!devUrl && !(await startEmbeddedServer())) return;
 
@@ -151,6 +161,11 @@ function createWindow(url: string): void {
     title: 'Viator',
     backgroundColor: '#0e1116',
     show: false,
+    // 'hidden' rather than frame: false — the window keeps its native resize borders, Snap
+    // Layouts and double-click-to-maximize; only the caption bar's *appearance* is ours. The
+    // page marks its drag region with -webkit-app-region (see `.titlebar` in theme.css).
+    titleBarStyle: 'hidden',
+    titleBarOverlay: TITLE_BAR_OVERLAY,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -159,6 +174,7 @@ function createWindow(url: string): void {
   });
 
   state.manage(win);
+  wireShortcuts(win);
   win.once('ready-to-show', () => win?.show());
   win.on('closed', () => {
     win = null;
@@ -178,6 +194,23 @@ function createWindow(url: string): void {
   });
 
   void win.loadURL(url);
+}
+
+/**
+ * Dropping the application menu also drops the accelerators its roles registered. Chromium
+ * still handles the text-editing keys (copy/paste/undo/select-all) on its own, so only reload
+ * and devtools need re-adding by hand.
+ */
+function wireShortcuts(target: BrowserWindow): void {
+  target.webContents.on('before-input-event', (_event, input) => {
+    if (input.type !== 'keyDown' || input.alt || input.meta) return;
+    const key = input.key.toLowerCase();
+    if (key === 'f12' || (input.control && input.shift && key === 'i')) {
+      target.webContents.toggleDevTools();
+    } else if (key === 'f5' || (input.control && !input.shift && key === 'r')) {
+      target.webContents.reload();
+    }
+  });
 }
 
 function isInternalUrl(target: string): boolean {

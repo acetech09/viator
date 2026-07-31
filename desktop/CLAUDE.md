@@ -69,6 +69,22 @@ UI is the unmodified React client, served over HTTP exactly as in `npm start`.
     you register the application. This is why the scheme reads the way it does.
   - Because the callback carries no port, the app and the EVE registration are decoupled —
     that is what allows the ephemeral port above.
+- **The window has no native caption bar and no application menu.** `titleBarStyle: 'hidden'`
+  plus `titleBarOverlay` leaves Windows drawing only the minimize/maximize/close buttons, painted
+  over the top-right of the page in the app's colors; the UI's own `.titlebar` occupies the rest
+  of that strip. Notes for anyone touching it:
+  - `titleBarStyle: 'hidden'`, **not** `frame: false` — the window keeps its native resize
+    borders, Snap Layouts and double-click-to-maximize, and none of that has to be reimplemented.
+  - `TITLE_BAR_OVERLAY`'s color/height duplicate `--bg-elev` and `.titlebar`'s 46px from
+    `client/src/theme.css`. Windows paints the overlay itself and cannot read the page's CSS, so
+    the two have to be changed together or the caption buttons sit on a mismatched strip.
+  - The drag region lives in the **client** (`-webkit-app-region` on `.titlebar`/`.splash`, and
+    the right-hand padding that keeps our controls clear of the caption buttons). Nothing here
+    knows about it; see `client/CLAUDE.md`.
+  - `Menu.setApplicationMenu(null)` removes the File/Edit/View bar. That also removes the
+    accelerators its roles registered, so `wireShortcuts()` re-adds reload (F5 / Ctrl+R) and
+    devtools (F12 / Ctrl+Shift+I) via `before-input-event`. Text editing keys are unaffected —
+    Chromium handles those below the menu layer.
 - **Nothing but the app itself loads in the window.** The `will-navigate` guard allows only
   `localhost`/`127.0.0.1` and sends everything else to the system browser. `*.eveonline.com`
   used to be allowed for the in-window login and is deliberately no longer.

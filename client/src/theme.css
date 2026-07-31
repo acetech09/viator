@@ -60,6 +60,23 @@ a { color: var(--accent); }
 }
 .titlebar .spacer { flex: 1; }
 
+/* The desktop shell hides the native caption bar, so this bar *is* the window's drag handle
+   (`-webkit-app-region` is inert in an ordinary browser tab). Anything clickable inside it has
+   to opt out, or the drag region swallows the click. */
+.titlebar { -webkit-app-region: drag; }
+.titlebar button, .titlebar a, .titlebar input, .titlebar select { -webkit-app-region: no-drag; }
+/* The SDE splash renders instead of the titlebar, so it carries the drag region itself —
+   otherwise the window can't be moved while static data loads. */
+.splash { -webkit-app-region: drag; }
+
+/* Windows paints the minimize/maximize/close buttons over the top-right of the page.
+   env(titlebar-area-width) is the width it leaves us; it varies with DPI, so don't hardcode a
+   number — the fallback is only for a renderer that doesn't expose the variable. The `desktop`
+   class is set in main.tsx and is absent in web mode, where nothing overlaps. */
+.desktop .titlebar {
+  padding-right: calc(100% - env(titlebar-area-width, calc(100% - 138px)) + 12px);
+}
+
 .tab {
   background: none;
   border: none;

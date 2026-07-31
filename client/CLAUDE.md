@@ -13,6 +13,16 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
 - `main.tsx` — providers (QueryClient, Router, `ToastProvider`).
 - `App.tsx` — **gates the whole app on `sde-status`** (splash until `ready`), then TitleBar +
   routes wrapped in `ErrorBoundary`. Routes: `/lists`, `/lists/:id`, `/settings`.
+- `main.tsx` also puts a **`desktop` class on `<html>`** when `window.viatorDesktop` exists. The
+  Electron shell hides the native caption bar, so `.titlebar` doubles as the window's drag handle
+  (`-webkit-app-region: drag`, with `no-drag` on every button/link/input inside it — a drag region
+  swallows clicks otherwise) and `.splash` carries one too, since it renders *instead of* the
+  titlebar and the window would otherwise be unmovable while static data loads. The `desktop`
+  class gates only the right-hand padding that keeps the app's own controls clear of the caption
+  buttons Windows paints over the page; its width comes from `env(titlebar-area-width)` and must
+  not be hardcoded (it changes with DPI). All of it is inert in a browser tab. The matching
+  `titleBarStyle`/`titleBarOverlay` half lives in `desktop/src/main.ts` — the overlay's color and
+  height mirror `.titlebar`'s and have to change with it.
 - `api.ts` — the single typed fetch layer. All endpoints live here; add new ones here.
 - `toast.tsx` — `useToast()` for transient notifications.
 - `hooks/useInvalidateList.ts` — `useInvalidateList(listId)` returns the standard
