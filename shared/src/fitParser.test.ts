@@ -80,6 +80,29 @@ Damage Control II`)!;
     ]);
   });
 
+  it('strips /OFFLINE state flags and still buys the module', () => {
+    const fit = parseFit(`[Orthrus, Go - orthrus]
+Rapid Light Missile Launcher II
+Core Probe Launcher I /offline
+Nanofiber Internal Structure II /OFFLINE
+
+Core Scanner Probe I x8`)!;
+    expect(fit.lines.map((l) => l.name)).toEqual([
+      'Orthrus',
+      'Rapid Light Missile Launcher II',
+      'Core Probe Launcher I',
+      'Nanofiber Internal Structure II',
+      'Core Scanner Probe I',
+    ]);
+    expect(fit.lines.find((l) => l.name === 'Core Probe Launcher I')?.quantity).toBe(1);
+    expect(fit.lines.find((l) => l.name === 'Core Scanner Probe I')?.quantity).toBe(8);
+  });
+
+  it('leaves a slash inside an item name alone (no leading space)', () => {
+    const fit = parseFit('[Rifter, Test]\nR.A.M.- Armor/Hull Tech')!;
+    expect(fit.lines[1]!.name).toBe('R.A.M.- Armor/Hull Tech');
+  });
+
   it('returns null when there is no header line', () => {
     expect(parseFit('Damage Control II\nTritanium 100')).toBeNull();
   });

@@ -31,6 +31,9 @@ the built output, so relative imports inside end in `.js`.
   are dropped — no item name is bracketed, so the whole `^\[.*\]$` shape is filtered, which
   also covers placeholder wording we haven't seen. They're **blanked in place**, not spliced
   out, so the surviving lines keep their line numbers for unmatched-name error reporting.
+  A trailing **EFT state flag** (` /OFFLINE`, and the `/word` shape generally) is stripped and
+  the module kept — an offline module is still bought. The leading space in the pattern matters:
+  a few item names carry a slash mid-word (`R.A.M.- Armor/Hull Tech`).
 
 ## Tests
 

@@ -50,10 +50,13 @@ export function buildPricedList(listId: number): PricedList | null {
     )
     .all(listId) as ItemRow[];
 
+  // Display order (the client renders groups in the order it gets them): manual groups first,
+  // then fits, each alphabetical. `position` only breaks ties between same-named rows now.
   const groupRows = db
     .prepare(
       `SELECT id, name, enabled, position, kind, ship_type_id, fit_qty, raw_fit
-       FROM add_groups WHERE list_id = ? ORDER BY position, id`,
+       FROM add_groups WHERE list_id = ?
+       ORDER BY CASE kind WHEN 'manual' THEN 0 ELSE 1 END, name COLLATE NOCASE, position, id`,
     )
     .all(listId) as GroupRow[];
 

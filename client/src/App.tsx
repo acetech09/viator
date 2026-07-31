@@ -9,8 +9,12 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ListsPage } from './pages/ListsPage';
 import { ListDetailPage } from './pages/ListDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { useAutoRefreshAssets } from './hooks/useAssetRefresh';
 
 export function App() {
+  // Warm the asset cache once per load; the manual button lives in the Existing stock tab.
+  useAutoRefreshAssets();
+
   const sde = useQuery({
     queryKey: ['sde-status'],
     queryFn: api.sdeStatus,

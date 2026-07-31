@@ -12,7 +12,14 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   `default-locations`. (`zone` is `'purchase'|'destination'` — existing-stock is split per zone.)
 - `main.tsx` — providers (QueryClient, Router, `ToastProvider`).
 - `App.tsx` — **gates the whole app on `sde-status`** (splash until `ready`), then TitleBar +
-  routes wrapped in `ErrorBoundary`. Routes: `/lists`, `/lists/:id`, `/settings`.
+  routes wrapped in `ErrorBoundary`. Routes: `/lists`, `/lists/:id`, `/settings`. Also calls
+  `useAutoRefreshAssets()` — the once-per-load ESI asset warm-up. It lives here, not in the
+  button, because the button's tab mounts and unmounts as the user navigates (the once-guard is
+  module-level for the same reason).
+- `components/TitleBar.tsx` — logo + brand + the two app-level `.tab` links. Purely navigational;
+  its tabs are deliberately styled heavier than the in-panel `.subtabs` (16.5px/700 vs 15px/600)
+  so the hierarchy reads top-down — but **not uppercase**, unlike the subtabs; at that size it
+  read as shouting.
 - `main.tsx` also puts a **`desktop` class on `<html>`** when `window.viatorDesktop` exists. The
   Electron shell hides the native caption bar, so `.titlebar` doubles as the window's drag handle
   (`-webkit-app-region: drag`, with `no-drag` on every button/link/input inside it — a drag region
@@ -25,6 +32,8 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   height mirror `.titlebar`'s and have to change with it.
 - `api.ts` — the single typed fetch layer. All endpoints live here; add new ones here.
 - `toast.tsx` — `useToast()` for transient notifications.
+- `hooks/useAssetRefresh.ts` — the ESI asset pull (mutation + `asset-status` query + cooldown
+  countdown), shared by `RefreshAssetsButton` and `App`'s `useAutoRefreshAssets()`.
 - `hooks/useInvalidateList.ts` — `useInvalidateList(listId)` returns the standard
   post-mutation invalidation (`priced` + `list-detail` + `lists`). Use it as the `onSuccess`
   of any mutation that touches a list's items/groups/fits instead of hand-rolling the trio.
@@ -41,7 +50,9 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   the click-to-edit title (`EditableText` → `renameList`, `stopPropagation`s so editing doesn't
   navigate), muted last-edited date, then three fixed-width right-aligned stats
   (`.list-card-stat`, 12ch): item count, ISK, m³ — the latter two with wallet/cargo icons via
-  `IskAmount`/`VolAmount` (em-dash when empty). Card body: two dividerless preview columns
+  `IskAmount`/`VolAmount`. An **empty list** (`item_count === 0`) renders none of that: the three
+  stats *and* the preview body are dropped and a muted `(empty)` (`.list-card-empty`) sits beside
+  the title instead — a row of zeros and em-dashes was pure noise. Card body: two dividerless preview columns
   (`PreviewColumn` — top items | top
   fits; icon · name · × qty, server-capped at 6, `.faded` bottom mask when > 4 lines).
 - `ListDetailPage.tsx` — click-to-edit `<h1>` title (`EditableText` → `renameList`, invalidates
@@ -179,7 +190,10 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
 - `SuggestModal.tsx` — presentational suggestion list; uses `onMouseDown` (not click) so the
   field's blur doesn't fire first.
 - `existing-stock/` (the "Existing stock" subtab, one file per section) —
-  `ExistingStockTab.tsx`: **two zone sections** (`StockSection`),
+  `ExistingStockTab.tsx`: a `RefreshAssetsButton` on top (the manual ESI pull — it feeds both
+  zones' API filter rows; renders nothing without an authorized character, and disables itself
+  with a live countdown while every character sits inside ESI's ~1h asset cache window; state
+  comes from `hooks/useAssetRefresh.ts`, shared with `App`'s warm-up), then **two zone sections** (`StockSection`),
   each headed with a hover tooltip (`.info-tip`): **"Existing Stock at Purchase Location"**
   (excluded from the Purchase view) and **"Existing Stock at Destination"** (excluded from
   Purchase **and** Transport). Each section renders a zone-scoped `ApiAssetSection` and, below it, a

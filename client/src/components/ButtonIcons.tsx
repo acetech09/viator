@@ -34,6 +34,18 @@ export function CopyIcon() {
   );
 }
 
+/** Feather "refresh-cw" — the pull-from-ESI affordance. */
+export function RefreshIcon() {
+  return (
+    <svg {...base}>
+      <path d="M23 4v6h-6" />
+      <path d="M1 20v-6h6" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+      <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14" />
+    </svg>
+  );
+}
+
 /** Feather "clipboard" — the manual-paste affordance. */
 export function ClipboardIcon() {
   return (

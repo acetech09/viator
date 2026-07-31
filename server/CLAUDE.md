@@ -183,7 +183,10 @@ The per-collection files are **403 (not downloadable)**; only the ~98 MB zip exi
   `unit_volume` — the client derives each view's deducted qty/extended/total (Purchase nets both
   zones, Transport nets destination only), since per-view totals differ. `groups[]` = per-group
   priced lines + subtotals (raw stored qty, **no** owned deduction), including disabled groups so
-  the client can grey them. Owned/stock deduction is a rollup-only concept. Every group has a
+  the client can grey them. `groups[]` comes back in **display order — manual groups first, then
+  fits, each alphabetical** (`position` only breaks ties); every client surface renders them in
+  the order it receives, including `GroupedView`'s top-to-bottom owned allocation.
+  Owned/stock deduction is a rollup-only concept. Every group has a
   `fit_qty` **multiplier** (fits *and* manual groups; default 1) that scales every line in both
   shapes; each `PricedGroupItem` carries both `stored_quantity` (raw, as typed) and `quantity`
   (`= stored_quantity * fit_qty`, the "expanded" qty used for pricing/rollup). The DTO carries

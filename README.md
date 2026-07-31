@@ -55,7 +55,7 @@ EVE binds refresh tokens to the application that issued them. Clearing the field
 to the built-in application, if this build has one.
 
 Assets refresh automatically when you open the app and via the **Refresh assets** button
-in the title bar (throttled to respect ESI cache timers).
+at the top of a list's **Existing stock** tab (throttled to respect ESI cache timers).
 
 ## How things work
 

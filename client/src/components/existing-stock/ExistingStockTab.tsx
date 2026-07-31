@@ -2,16 +2,19 @@ import { useState } from 'react';
 import type { StockZone } from '@viator/shared';
 import { ApiAssetSection } from './ApiAssetSection';
 import { AssetPasteSection } from './AssetPasteSection';
+import { RefreshAssetsButton } from './RefreshAssetsButton';
 
 /**
  * "Existing stock" subtab, split into two zones:
  *   - Purchase Location — netted out of the Purchase view only.
  *   - Destination — netted out of BOTH the Purchase and Transport views.
  * Each zone has its own API asset filter rows and its own collapsible manual-paste box.
+ * The ESI asset pull sits on top, since it feeds both zones' API filter rows.
  */
 export function ExistingStockTab({ listId }: { listId: number }) {
   return (
     <div className="col" style={{ gap: 28 }}>
+      <RefreshAssetsButton />
       <StockSection
         listId={listId}
         zone="purchase"

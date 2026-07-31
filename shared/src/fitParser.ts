@@ -27,6 +27,15 @@ const HEADER_RE = /^\[\s*(.+?)\s*,\s*(.+?)\s*\]$/;
 const PLACEHOLDER_RE = /^\[.*\]$/;
 
 /**
+ * An EFT module *state* flag: pyfa appends ` /OFFLINE` to modules left offline (and the format
+ * allows other `/word` suffixes). It says nothing about what to buy — an offline module is still
+ * on the ship — so it's stripped and the module is kept. The leading whitespace is required:
+ * a few item names contain a slash inside a word (`R.A.M.- Armor/Hull Tech`), none end in a
+ * space-separated `/word`.
+ */
+const STATE_FLAG_RE = /\s+\/\w+\s*$/;
+
+/**
  * Parse a pyfa/EFT fit paste into a ship + fit name + buyable lines. The first line must be
  * a `[Ship, Fit name]` header; the ship hull becomes the first line (qty 1) and the rest of
  * the block is parsed with the ordinary paste parser (blank section separators ignored,
@@ -51,10 +60,15 @@ export function parseFit(text: string): ParsedFit | null {
 
   // Parse everything after the header as ordinary item lines (drops the header itself so it
   // isn't treated as an unmatched item). Empty-slot placeholders are blanked rather than
-  // removed so the remaining lines keep their line numbers for error reporting.
+  // removed so the remaining lines keep their line numbers for error reporting; `/OFFLINE`
+  // state flags are stripped off the module name they trail.
   const body = raw
     .slice(headerIdx + 1)
-    .map((line) => (PLACEHOLDER_RE.test(line.trim()) ? '' : line))
+    .map((line) => {
+      const trimmed = line.trim();
+      if (PLACEHOLDER_RE.test(trimmed)) return '';
+      return trimmed.replace(STATE_FLAG_RE, '');
+    })
     .join('\n');
   const bodyLines = parsePaste(body).lines;
 

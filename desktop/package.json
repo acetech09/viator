@@ -1,7 +1,7 @@
 {
   "name": "viator-desktop",
   "productName": "Viator",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Viator — EVE Online shopping-list manager, packaged as a desktop app",
   "author": "acetech09",
   "license": "MIT",

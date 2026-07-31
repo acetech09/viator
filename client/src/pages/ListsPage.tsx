@@ -47,6 +47,9 @@ function ListCard({
   onDuplicate: () => void;
   onDelete: () => void;
 }) {
+  // An empty list has nothing to say in the stats or the previews — a row of zeros and em-dashes
+  // is noise, so it collapses to a single "(empty)" marker beside the title.
+  const empty = list.item_count === 0;
   return (
     <div className="list-card-row">
       <div className="list-card" onClick={onOpen}>
@@ -58,22 +61,29 @@ function ListCard({
               className="editable-title"
               inputClassName="title-input"
             />
+            {empty && <span className="list-card-empty muted">(empty)</span>}
           </div>
           <span className="list-card-edited muted">{formatDate(list.updated_at)}</span>
-          <span className="list-card-stat">
-            {list.item_count} {list.item_count === 1 ? 'item' : 'items'}
-          </span>
-          <span className="list-card-stat">
-            <IskAmount value={list.item_count > 0 ? list.total : null} />
-          </span>
-          <span className="list-card-stat vol">
-            <VolAmount value={list.item_count > 0 ? list.total_volume : null} />
-          </span>
+          {!empty && (
+            <>
+              <span className="list-card-stat">
+                {list.item_count} {list.item_count === 1 ? 'item' : 'items'}
+              </span>
+              <span className="list-card-stat">
+                <IskAmount value={list.total} />
+              </span>
+              <span className="list-card-stat vol">
+                <VolAmount value={list.total_volume} />
+              </span>
+            </>
+          )}
         </div>
-        <div className="list-card-body">
-          <PreviewColumn entries={list.top_items} empty="No items" />
-          <PreviewColumn entries={list.top_fits} empty="No fits" />
-        </div>
+        {!empty && (
+          <div className="list-card-body">
+            <PreviewColumn entries={list.top_items} empty="No items" />
+            <PreviewColumn entries={list.top_fits} empty="No fits" />
+          </div>
+        )}
       </div>
       <div className="list-card-actions" onClick={(e) => e.stopPropagation()}>
         <button className="btn icon" title="Duplicate list" onClick={onDuplicate}>
