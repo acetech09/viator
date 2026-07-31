@@ -26,13 +26,17 @@ the built output, so relative imports inside end in `.js`.
   header gives the hull + fit name; the hull becomes line 0 (qty 1) and the body is run through
   `parsePaste` (blank section separators ignored, `x`-suffixes honoured, repeated lines kept).
   Returns `null` when there is no header line. Like `parsePaste`, it **never validates names**.
+  Body lines wrapped in brackets are **empty-slot placeholders** (`[Empty High slot]`, …) and
+  are dropped — no item name is bracketed, so the whole `^\[.*\]$` shape is filtered, which
+  also covers placeholder wording we haven't seen. They're **blanked in place**, not spliced
+  out, so the surviving lines keep their line numbers for unmatched-name error reporting.
 
 ## Tests
 
 `src/*.test.ts` (vitest). Cover formatIsk boundaries, every paste column-order case
 (tab/comma/space, qty-first vs qty-last, `Hobgoblin II` roman-numeral safety, x-prefix), and
 `parseFit` (header extraction, hull line, repeated-line/`x`-suffix handling, hyphenated
-subsystem names, no-header → null).
+subsystem names, empty-slot placeholders, no-header → null).
 Run via `npm test` from the root or `npm -w shared run test`.
 
 Excluded from the build via `tsconfig.json` `exclude: ["**/*.test.ts"]`.

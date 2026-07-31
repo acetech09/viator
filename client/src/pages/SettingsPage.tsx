@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { PriceSource, Settings } from '@viator/shared';
 import { api } from '../api';
 import { useToast } from '../toast';
 import { DefaultLocationsSection } from '../components/DefaultLocationsSection';
+import { EveApplicationPanel } from '../components/EveApplicationPanel';
 
 const PRICE_LABELS: Record<PriceSource, string> = {
   esi_average: 'ESI estimated price (official average)',
@@ -20,7 +21,16 @@ const HUBS: Array<{ id: number; region: number; name: string }> = [
   { id: 60005686, region: 10000042, name: 'Hek VIII-12 (Metropolis)' },
 ];
 
+/** Advanced sub-pages, rendered in place of the main settings column. */
+type AdvancedPage = 'eve-app';
+
 export function SettingsPage() {
+  const [advancedPage, setAdvancedPage] = useState<AdvancedPage | null>(null);
+  if (advancedPage === 'eve-app') return <EveApplicationPanel onBack={() => setAdvancedPage(null)} />;
+  return <SettingsMain onOpenAdvanced={setAdvancedPage} />;
+}
+
+function SettingsMain({ onOpenAdvanced }: { onOpenAdvanced: (p: AdvancedPage) => void }) {
   const qc = useQueryClient();
   const toast = useToast();
   const settings = useQuery({ queryKey: ['settings'], queryFn: api.getSettings });
@@ -42,65 +52,14 @@ export function SettingsPage() {
     },
   });
 
-  const [clientId, setClientId] = useState('');
-  const [email, setEmail] = useState('');
-  useEffect(() => {
-    if (settings.data) {
-      // Leave the field blank when we're on the bundled app — it's an override, not a copy.
-      setClientId(settings.data.client_id_is_default ? '' : settings.data.client_id);
-      setEmail(settings.data.contact_email);
-    }
-  }, [settings.data]);
-
   if (!settings.data) return <div className="muted">Loading…</div>;
   const s = settings.data;
   const hubDisabled = s.price_source === 'esi_average';
 
   return (
-    <div>
+    <div className="settings-page">
       <div className="page-header">
         <h1>Settings</h1>
-      </div>
-
-      <div className="settings-section">
-        <h2>EVE application</h2>
-        <p className="muted" style={{ marginTop: 0 }}>
-          {s.client_id_is_default && s.client_id
-            ? 'Viator uses its own registered EVE application, so you can just add a character below — no setup needed.'
-            : 'Viator normally ships with its own EVE application; this build has none bundled, so enter a Client ID below.'}
-        </p>
-        <details>
-          <summary className="muted">Use your own EVE application (optional)</summary>
-          <p className="muted">
-            Register a native application at{' '}
-            <a href="https://developers.eveonline.com/applications" target="_blank" rel="noreferrer">
-              developers.eveonline.com
-            </a>
-            . Set the callback URL to <code>http://localhost:8642/sso/callback</code> and grant the scopes{' '}
-            <code>esi-assets.read_assets.v1</code> and <code>esi-universe.read_structures.v1</code>. Paste the Client ID
-            below — leave it blank to use the built-in application. Changing it means re-authorizing your characters.
-          </p>
-          <div className="settings-row">
-            <label className="field-label">Client ID</label>
-            <input
-              type="text"
-              value={clientId}
-              onChange={(e) => setClientId(e.target.value)}
-              placeholder={s.client_id_is_default && s.client_id ? 'Using the built-in application' : 'Client ID'}
-            />
-          </div>
-        </details>
-        <div className="settings-row">
-          <label className="field-label">Contact email (sent in the ESI User-Agent, optional but recommended)</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
-        </div>
-        <button
-          className="btn primary"
-          onClick={() => save.mutate({ client_id: clientId, contact_email: email })}
-          disabled={save.isPending}
-        >
-          Save application settings
-        </button>
       </div>
 
       <div className="settings-section">
@@ -171,6 +130,21 @@ export function SettingsPage() {
       </div>
 
       <DefaultLocationsSection />
+
+      <div className="settings-section">
+        <h2>Advanced</h2>
+        <button className="settings-nav-row" onClick={() => onOpenAdvanced('eve-app')}>
+          <span className="settings-nav-text">
+            <span className="settings-nav-title">EVE application Client ID</span>
+            <span className="muted">
+              {s.client_id_is_default && s.client_id
+                ? 'Using the built-in application — override it with your own Client ID.'
+                : 'No application bundled in this build — a Client ID is required to add characters.'}
+            </span>
+          </span>
+          <span className="settings-nav-caret">›</span>
+        </button>
+      </div>
     </div>
   );
 }

@@ -44,7 +44,7 @@ export const SSO_SCOPES = ['esi-assets.read_assets.v1', 'esi-universe.read_struc
  * a request may only ask for scopes the registration already has. Changing this id
  * invalidates every stored refresh token (they are bound to the client they were issued to).
  */
-export const DEFAULT_SSO_CLIENT_ID = process.env.VIATOR_SSO_CLIENT_ID ?? '';
+export const DEFAULT_SSO_CLIENT_ID = process.env.VIATOR_SSO_CLIENT_ID ?? '446c64d5f7c24f0694c9193d170b7372';
 
 export const IMAGE_BASE = 'https://images.evetech.net';
 

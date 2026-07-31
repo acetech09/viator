@@ -75,7 +75,7 @@ module-evaluation time, so anything setting them must do so **before** importing
 | `settings.ts` | `/api/settings` GET/PUT |
 | `sso.ts` | `/api/characters` list/delete; `/sso/login`, `/sso/callback` (PKCE) |
 | `assets.ts` | `/api/assets/refresh` + `/status`; `/api/characters/:id/locations`; `/api/default-locations` CRUD (rows carry `zone`; DELETE is `/:characterId/:locationId/:zone`) |
-| `sde.ts` | `/api/sde/status`; `/api/sde/types-index` (ETagged by build) |
+| `sde.ts` | `/api/sde/status`; `/api/sde/types-index` (ETagged by build **+ a payload-shape salt** — bump `INDEX_SHAPE` when the row shape changes or cached clients 304 onto the old one). Rows are `[type_id, name]`, with a trailing `1` on **demoted** types (categories 9 Blueprint / 30 Apparel / 91 SKINs / 2118 Personalization, plus a `SKIN` name match for the crates filed under Special Edition Assets). That's ~8.8k of ~19k searchable types; the client sorts them below every ordinary match instead of hiding them. Accessories (5) is deliberately **not** demoted — skill injectors/Aurum are real purchases. |
 
 ## ESI — `src/esi/`
 

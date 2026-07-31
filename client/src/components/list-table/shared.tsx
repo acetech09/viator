@@ -84,7 +84,7 @@ export function ItemNameCell({
   return (
     <td>
       <span className="item-name">
-        <ItemIcon typeId={typeId} />
+        <ItemIcon typeId={typeId} name={name} />
         {name}
         {suffix != null && (
           <span className="muted" style={{ fontSize: 12 }}>

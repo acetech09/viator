@@ -42,11 +42,15 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   component stays mounted across list navigations) and passes the result into `ListTable`
   (which renders it as the spawnable **Missing items** tab) — text/result live here so they
   survive right-panel subtab switches.
-- `SettingsPage.tsx` — EVE app + contact email, character management (`/sso/login`), price
-  source + hub, and `DefaultLocationsSection`. The Client ID input is an **optional override**
-  inside a collapsed `<details>` — the server bundles an application, so when
-  `client_id_is_default` is set the field renders blank (never echoing the bundled id) and
-  saving it empty clears the override.
+- `SettingsPage.tsx` — a **centered** `.settings-page` column (like `ListsPage`) holding, in order:
+  character management (`/sso/login`), price source + hub, `DefaultLocationsSection`, and an
+  **Advanced** section. Advanced is a plain section whose body is a list of `.settings-nav-row`
+  buttons, each opening a **sub-page** (`AdvancedPage` state in `SettingsPage`, which renders the
+  sub-page *instead of* `SettingsMain` — no routing involved). Its one entry today is **EVE
+  application Client ID** → `EveApplicationPanel`. The row's muted subtitle reflects whether the
+  build has a bundled application. Everything a first-run user needs (add a character) is on the
+  main column; the app override is one level down. User-facing copy sticks to CCP's own wording
+  ("application", "Client ID") so the steps match what developers.eveonline.com shows.
 
 ## Components — `src/components/` (behaviors that are easy to break)
 
@@ -203,7 +207,14 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
 - `EyeIcon.tsx` — inline feather-style eye / eye-off SVG for "visibility" affordances (add-group
   shown-in-list vs. hidden). Styled via `.eye-btn` (+ `.off`) in `theme.css`.
 - `ItemIcon.tsx` — the **one** way a 32px EVE type/ship icon is rendered
-  (`images.evetech.net/types/:id/icon`, `.item-icon`). Use it instead of an inline `<img>`.
+  (`images.evetech.net/types/:id/…`, `.item-icon`). Use it instead of an inline `<img>`.
+  **Pass `name` whenever it's known**: blueprints have no `icon` variant on the image server
+  (`/types/683/icon` is a **400**) — they serve `bp`. A `… Blueprint` name picks `bp` first,
+  everything else `icon`, and the *other* variant is retried on error, since neither signal is
+  airtight (~160 special-edition blueprints aren't named "… Blueprint"; a few ordinary
+  commodities are). When both variants fail the component renders an **empty `.item-icon`
+  tile** rather than a broken-image glyph — SKINs have no art under any variant (404), which
+  is why `.item-icon` carries `display: inline-block` (the fallback is a `<span>`).
 - `CostVolume.tsx` — the **one** way ISK+cargo are shown together: `<wallet> num ISK` ⇥ `<cargo>
   num m³` (icons from `src/assets/32px-{Wallet,Cargo}.png`, inlined by Vite). Icons scale with
   font-size (`.cv-ico { height: 1em }` in `theme.css`), so size is set by the container: `size="lg"`
@@ -213,13 +224,28 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   cells** (Unit / Unit m³ / Total / Total m³ — `PriceVolCells` in `list-table/shared.tsx`) stay
   plain `formatIsk`/`formatVolume` under their labeled columns — the icon+label pairing is only
   for the combined summary spots.
+- `EveApplicationPanel.tsx` — the **EVE application Client ID** sub-page of Advanced settings (own
+  `.settings-page` column + a `← Advanced` back button): Client ID and contact email, with the
+  registration instructions and the Save button. Both are optional overrides of shipped defaults;
+  the server bundles an application, so when `client_id_is_default` is set the Client ID field
+  renders blank (never echoing the bundled id) and saving it empty clears the override. Self-
+  contained — it runs its own `settings` query + save mutation rather than taking them as props.
 - `DefaultLocationsSection.tsx` — global defaults on/off toggle, then two `ZoneDefaults` blocks
   (**Purchase location** / **Destination**) each listing that zone's saved defaults + an add row;
   defaults carry a `zone` and seed the matching existing-stock section on new lists.
 
 ## Fuzzy item search — `src/hooks/useTypesIndex.ts`
 
-Loads `/api/sde/types-index` once (published market types, ~40k), builds a uFuzzy index.
+Loads `/api/sde/types-index` once (published market types, ~19k), builds a uFuzzy index.
+Entries are `[type_id, name, demoted?]`; a trailing `1` marks a **demoted** type
+(SKINs/apparel/personalization/blueprints — the server decides, see `routes/sde.ts`).
+
+`search()` collects uFuzzy's ranked hits into **two buckets** — ordinary matches, then
+demoted ones — and returns `primary.concat(demoted).slice(0, limit)`. Sorting after
+truncation wouldn't work: SKINs outnumber every real match, so "raven" filled all 12 slots
+with SKINs before `Raven Navy Issue` was ever reached. The loop stops once **both** buckets
+could fill the limit on their own.
+
 **Gotcha (already fixed, don't reintroduce):** the ranked haystack index is
 `info.idx[order[i]]` directly — do NOT index through `idxs` again. Unranked path (too many
 matches) uses `idxs[i]`. Wrong indexing crashes only on the full-size list, not small tests.

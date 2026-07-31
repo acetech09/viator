@@ -57,6 +57,29 @@ describe('parseFit', () => {
     expect(fit.lines.some((l) => l.name.includes('['))).toBe(false);
   });
 
+  it('drops [Empty ... slot] placeholders without disturbing the surrounding lines', () => {
+    const fit = parseFit(`[Nestor, Links]
+Shield Command Burst II
+Skirmish Command Burst II
+Gistum B-Type Medium Remote Shield Booster
+[Empty High slot]
+Gistum B-Type Medium Remote Shield Booster
+
+[ Empty Med slot ]
+[Empty Rig slot]
+Damage Control II`)!;
+    expect(fit.lines.some((l) => /empty/i.test(l.name))).toBe(false);
+    expect(fit.lines.filter((l) => l.name === 'Gistum B-Type Medium Remote Shield Booster')).toHaveLength(2);
+    expect(fit.lines.map((l) => l.name)).toEqual([
+      'Nestor',
+      'Shield Command Burst II',
+      'Skirmish Command Burst II',
+      'Gistum B-Type Medium Remote Shield Booster',
+      'Gistum B-Type Medium Remote Shield Booster',
+      'Damage Control II',
+    ]);
+  });
+
   it('returns null when there is no header line', () => {
     expect(parseFit('Damage Control II\nTritanium 100')).toBeNull();
   });

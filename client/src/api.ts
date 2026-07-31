@@ -46,7 +46,8 @@ export interface ListDetail {
 export const api = {
   // SDE
   sdeStatus: () => req<SdeStatus>('/api/sde/status'),
-  typesIndex: () => req<Array<[number, string]>>('/api/sde/types-index'),
+  // [type_id, name] + an optional trailing 1 marking a demoted type (cosmetic/blueprint).
+  typesIndex: () => req<Array<[number, string, number?]>>('/api/sde/types-index'),
 
   // settings
   getSettings: () => req<Settings>('/api/settings'),

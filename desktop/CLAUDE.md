@@ -56,6 +56,8 @@ get HMR and the Electron-ABI sqlite is never loaded. Vite proxies `/api` and `/s
 tsx-watch server on 8642, and dev `APP_ORIGIN` is 5173, so SSO round-trips too.
 
 For a production-shaped check: `npm run build && npm run build:desktop && npm --prefix desktop start`.
+`dev-scripts\run-desktop.bat` (repo root) is that same sequence as a double-clickable script,
+with dependency install and Node-missing guards; `--no-build` launches the existing build.
 
 ## Releasing
 

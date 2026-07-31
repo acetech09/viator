@@ -1,3 +1,5 @@
+import { ItemIcon } from './ItemIcon';
+
 export interface Suggestion {
   type_id: number;
   name: string;
@@ -27,12 +29,7 @@ export function SuggestModal({ items, activeIndex, onPick, onHover }: Props) {
             onPick(s);
           }}
         >
-          <img
-            className="item-icon"
-            src={`https://images.evetech.net/types/${s.type_id}/icon?size=32`}
-            alt=""
-            loading="lazy"
-          />
+          <ItemIcon typeId={s.type_id} name={s.name} />
           <span>{s.name}</span>
         </div>
       ))}

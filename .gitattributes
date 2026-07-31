@@ -1,6 +1,9 @@
 # Normalize all text files to LF in the repo (silences the constant CRLF warnings on Windows).
 * text=auto eol=lf
 
+# Windows batch files must stay CRLF to run reliably.
+*.bat text eol=crlf
+
 # Binary assets.
 *.png binary
 *.psd binary

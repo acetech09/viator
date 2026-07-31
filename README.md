@@ -27,8 +27,9 @@ then complete the EVE SSO login. The character appears in Settings, and its
 stations/structures become available as inventory filters. Viator ships with its own
 registered EVE application, so there is nothing to sign up for.
 
-While you're in Settings it's worth adding a contact email — it's sent in the ESI
-User-Agent, which CCP appreciates if one of your requests ever misbehaves.
+It's also worth adding a contact email under **Settings → Advanced → EVE application Client
+ID** — it's sent in the ESI User-Agent, which CCP appreciates if one of your requests ever
+misbehaves.
 
 ### Using your own EVE application (optional)
 
@@ -40,7 +41,8 @@ If you'd rather authorize against an application you control, register one at
    - `esi-assets.read_assets.v1`
    - `esi-universe.read_structures.v1` (so player structures can be named)
 3. **Callback URL:** `http://localhost:8642/sso/callback` (exactly this).
-4. Copy the app's **Client ID** and paste it into Settings → *Use your own EVE application*.
+4. Copy the app's **Client ID** and paste it into **Settings → Advanced → EVE application
+   Client ID**.
 
 Characters authorized under one application have to be re-added after you switch, because
 EVE binds refresh tokens to the application that issued them. Clearing the field returns you
@@ -89,6 +91,10 @@ npm run dev          # in one terminal
 npm run dev:desktop  # Electron window pointed at the Vite dev server
 npm run dist:desktop # build the installer into desktop/release/
 ```
+
+To build the current source and run it in the real desktop shell (no installer),
+double-click `dev-scripts\run-desktop.bat`. That path uses `%APPDATA%\Viator`, like the
+installed app.
 
 ### Moving an existing database into the desktop app
 

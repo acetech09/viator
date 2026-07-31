@@ -34,6 +34,7 @@ Read the workspace's own `CLAUDE.md` before editing it — each documents its fi
 | Typecheck all | `npm run typecheck` |
 | Build the desktop bundle (after `npm run build`) | `npm run build:desktop` |
 | Build the Windows installer | `npm run dist:desktop` → `desktop/release/` |
+| Build + launch the current tree in the Electron shell (double-clickable) | `dev-scripts\run-desktop.bat` (`--no-build` to skip the builds) |
 
 `npm run dev` proxies `/api` and `/sso` from Vite → :8642. The SSO callback is always
 `http://localhost:8642/sso/callback` in both dev and prod.

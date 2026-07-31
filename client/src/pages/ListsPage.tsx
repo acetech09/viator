@@ -25,7 +25,7 @@ function PreviewColumn({ entries, empty }: { entries: ListOverviewEntry[]; empty
     <div className={'list-card-preview' + (entries.length > 4 ? ' faded' : '')}>
       {entries.map((e, i) => (
         <div className="preview-line" key={`${e.type_id}:${i}`}>
-          <ItemIcon typeId={e.type_id} />
+          <ItemIcon typeId={e.type_id} name={e.name} />
           <span className="preview-name">{e.name}</span>
           <span className="preview-qty muted">× {e.quantity}</span>
         </div>

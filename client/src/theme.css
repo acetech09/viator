@@ -299,7 +299,9 @@ textarea { resize: vertical; width: 100%; font-family: var(--mono); font-size: 1
   flex-shrink: 0;
 }
 
-.item-icon { width: 28px; height: 28px; vertical-align: middle; border-radius: 3px; background: var(--bg-elev2); }
+/* Also applied to the blank <span> ItemIcon falls back to when the image server has no art
+   for a type — hence display:inline-block, so the empty tile still takes up its space. */
+.item-icon { display: inline-block; width: 28px; height: 28px; vertical-align: middle; border-radius: 3px; background: var(--bg-elev2); }
 .item-name { display: flex; align-items: center; gap: 8px; }
 
 tr.covered td { color: var(--text-dim); text-decoration: line-through; }
@@ -442,10 +444,26 @@ tr.covered .item-icon { opacity: 0.4; filter: grayscale(1); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Centered like the lists index, so settings isn't pinned to the left edge on wide screens. */
+.settings-page { max-width: 720px; margin: 0 auto; }
+
 .settings-section {
   background: var(--bg-elev); border: 1px solid var(--border);
-  border-radius: 8px; padding: 18px; margin-bottom: 16px; max-width: 720px;
+  border-radius: 8px; padding: 18px; margin-bottom: 16px;
 }
+
+/* Row inside the Advanced section that opens a settings sub-page. */
+.settings-nav-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background: var(--bg-elev2); color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: 6px;
+  padding: 10px 12px; cursor: pointer; font: inherit;
+}
+.settings-nav-row:hover { background: var(--row-hover); border-color: var(--accent-dim); }
+.settings-nav-text { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.settings-nav-title { font-size: 14px; }
+.settings-nav-text .muted { font-size: 12px; }
+.settings-nav-caret { color: var(--text-dim); font-size: 18px; line-height: 1; }
 .settings-section h2 { font-size: 15px; margin: 0 0 14px; }
 .settings-row { margin-bottom: 14px; }
 .settings-row input[type='text'], .settings-row input[type='email'], .settings-row select { width: 100%; max-width: 420px; }
