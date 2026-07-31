@@ -42,8 +42,11 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   component stays mounted across list navigations) and passes the result into `ListTable`
   (which renders it as the spawnable **Missing items** tab) — text/result live here so they
   survive right-panel subtab switches.
-- `SettingsPage.tsx` — EVE app client-id + contact email, character management (`/sso/login`),
-  price source + hub, and `DefaultLocationsSection`.
+- `SettingsPage.tsx` — EVE app + contact email, character management (`/sso/login`), price
+  source + hub, and `DefaultLocationsSection`. The Client ID input is an **optional override**
+  inside a collapsed `<details>` — the server bundles an application, so when
+  `client_id_is_default` is set the field renders blank (never echoing the bundled id) and
+  saving it empty clears the override.
 
 ## Components — `src/components/` (behaviors that are easy to break)
 

@@ -120,5 +120,7 @@ working NSIS installer. Releases publish to GitHub Releases from a tag; electron
 downloads in the background and installs on quit.
 
 The only path not verified against live servers is a real character login + asset fetch
-(needs the user's own EVE developer app). Everything around it is covered: SSO URL/token
-logic, and `classifyAssets` + deduction are unit-tested / synthetic-data-tested.
+(needs a registered EVE developer app — the app ships one, `DEFAULT_SSO_CLIENT_ID` in
+`server/src/config.ts`, and Settings keeps an optional per-user override). Everything around
+it is covered: SSO URL/token logic, and `classifyAssets` + deduction are unit-tested /
+synthetic-data-tested.

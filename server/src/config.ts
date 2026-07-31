@@ -33,6 +33,19 @@ export const SSO_METADATA = `${SSO_BASE}/.well-known/oauth-authorization-server`
 export const SSO_REDIRECT = `http://localhost:${PORT}/sso/callback`;
 export const SSO_SCOPES = ['esi-assets.read_assets.v1', 'esi-universe.read_structures.v1'];
 
+/**
+ * The EVE application Viator ships with, so users don't have to register their own.
+ *
+ * Safe to bundle: this is a PKCE public client, so there is no secret — and the client id
+ * is already visible in the user's URL bar during the SSO redirect. `VIATOR_SSO_CLIENT_ID`
+ * overrides it for local testing; a user-entered Client ID in Settings overrides both.
+ *
+ * The registered app must use SSO_REDIRECT as its callback and grant (at least) SSO_SCOPES —
+ * a request may only ask for scopes the registration already has. Changing this id
+ * invalidates every stored refresh token (they are bound to the client they were issued to).
+ */
+export const DEFAULT_SSO_CLIENT_ID = process.env.VIATOR_SSO_CLIENT_ID ?? '';
+
 export const IMAGE_BASE = 'https://images.evetech.net';
 
 // --- SDE ---

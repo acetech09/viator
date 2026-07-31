@@ -39,7 +39,7 @@ export async function ssoRoutes(app: FastifyInstance): Promise<void> {
   // Start the PKCE flow.
   app.get('/sso/login', async (req, reply) => {
     const { client_id } = getSettings();
-    if (!client_id) return reply.code(400).send('Set a Client ID in Settings first.');
+    if (!client_id) return reply.code(400).send('No EVE application configured. Set a Client ID in Settings first.');
     gcPending();
     const state = randomState();
     const pkce = createPkce();

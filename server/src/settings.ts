@@ -1,9 +1,10 @@
 import type { PriceSource, Settings } from '@viator/shared';
 import { getDb } from './db/db.js';
-import { DEFAULT_HUB_REGION_ID, DEFAULT_HUB_STATION_ID } from './config.js';
+import { DEFAULT_HUB_REGION_ID, DEFAULT_HUB_STATION_ID, DEFAULT_SSO_CLIENT_ID } from './config.js';
 
 const DEFAULTS: Settings = {
-  client_id: '',
+  client_id: DEFAULT_SSO_CLIENT_ID,
+  client_id_is_default: true,
   contact_email: '',
   price_source: 'esi_average',
   hub_station_id: DEFAULT_HUB_STATION_ID,
@@ -17,8 +18,11 @@ export function getSettings(): Settings {
   const db = getDb();
   const rows = db.prepare('SELECT key, value FROM settings').all() as Array<{ key: string; value: string }>;
   const map = new Map(rows.map((r) => [r.key, r.value]));
+  // An empty stored value means "no override" — fall back to the bundled application.
+  const ownClientId = map.get('client_id')?.trim() ?? '';
   return {
-    client_id: map.get('client_id') ?? DEFAULTS.client_id,
+    client_id: ownClientId || DEFAULTS.client_id,
+    client_id_is_default: !ownClientId,
     contact_email: map.get('contact_email') ?? DEFAULTS.contact_email,
     price_source: (VALID_SOURCES.includes(map.get('price_source') as PriceSource)
       ? (map.get('price_source') as PriceSource)

@@ -16,6 +16,13 @@ compiled `dist/`.
 All constants: ports (8642), `COMPATIBILITY_DATE` (pinned ESI date — bump deliberately),
 ESI/SSO/SDE/image URLs, `SSO_SCOPES`, `SSO_REDIRECT`, default hub (Jita 4-4 / The Forge).
 
+`DEFAULT_SSO_CLIENT_ID` is the **bundled EVE application** (overridable at build/run time via
+`VIATOR_SSO_CLIENT_ID`), so users don't have to register their own. Safe to ship: PKCE is a
+public-client flow with no secret, and the id is already visible in the SSO redirect. The
+registration it names must use `SSO_REDIRECT` as its callback and grant at least `SSO_SCOPES`
+(a request may only ask for scopes the registration already has). Changing the id invalidates
+every stored refresh token — EVE binds them to the issuing client.
+
 **Three values are env-overridable** so the packaged desktop app can relocate them:
 `DATA_DIR` (`VIATOR_DATA_DIR` — `DB_PATH` and the SDE temp zip follow it), `CLIENT_DIST`
 (`VIATOR_CLIENT_DIST`) and `APP_VERSION` (`VIATOR_APP_VERSION`, reported in the ESI
@@ -52,7 +59,10 @@ module-evaluation time, so anything setting them must do so **before** importing
   `root_location_id`+`included`+`bucket_kind`/`bucket_id`), `location_names`, `esi_cache`,
   `settings`, `meta`.
 - `src/settings.ts` — `getSettings()`/`updateSettings()`. Defaults live here (price_source
-  defaults to `esi_average`).
+  defaults to `esi_average`). `client_id` is **resolved**: a non-empty stored value is the
+  user's override, anything else falls back to `DEFAULT_SSO_CLIENT_ID`, and
+  `client_id_is_default` tells the UI which it got (so the Settings field stays blank rather
+  than echoing the bundled id back). Saving an empty string clears the override.
 
 ## Routes — `src/routes/` (all registered in `index.ts`)
 

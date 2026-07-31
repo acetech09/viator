@@ -46,7 +46,8 @@ export function SettingsPage() {
   const [email, setEmail] = useState('');
   useEffect(() => {
     if (settings.data) {
-      setClientId(settings.data.client_id);
+      // Leave the field blank when we're on the bundled app — it's an override, not a copy.
+      setClientId(settings.data.client_id_is_default ? '' : settings.data.client_id);
       setEmail(settings.data.contact_email);
     }
   }, [settings.data]);
@@ -64,18 +65,31 @@ export function SettingsPage() {
       <div className="settings-section">
         <h2>EVE application</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          Register a native application at{' '}
-          <a href="https://developers.eveonline.com/applications" target="_blank" rel="noreferrer">
-            developers.eveonline.com
-          </a>
-          . Set the callback URL to <code>http://localhost:8642/sso/callback</code> and grant the scopes{' '}
-          <code>esi-assets.read_assets.v1</code> and <code>esi-universe.read_structures.v1</code>. Paste the Client ID
-          below.
+          {s.client_id_is_default && s.client_id
+            ? 'Viator uses its own registered EVE application, so you can just add a character below — no setup needed.'
+            : 'Viator normally ships with its own EVE application; this build has none bundled, so enter a Client ID below.'}
         </p>
-        <div className="settings-row">
-          <label className="field-label">Client ID</label>
-          <input type="text" value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="Client ID" />
-        </div>
+        <details>
+          <summary className="muted">Use your own EVE application (optional)</summary>
+          <p className="muted">
+            Register a native application at{' '}
+            <a href="https://developers.eveonline.com/applications" target="_blank" rel="noreferrer">
+              developers.eveonline.com
+            </a>
+            . Set the callback URL to <code>http://localhost:8642/sso/callback</code> and grant the scopes{' '}
+            <code>esi-assets.read_assets.v1</code> and <code>esi-universe.read_structures.v1</code>. Paste the Client ID
+            below — leave it blank to use the built-in application. Changing it means re-authorizing your characters.
+          </p>
+          <div className="settings-row">
+            <label className="field-label">Client ID</label>
+            <input
+              type="text"
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              placeholder={s.client_id_is_default && s.client_id ? 'Using the built-in application' : 'Client ID'}
+            />
+          </div>
+        </details>
         <div className="settings-row">
           <label className="field-label">Contact email (sent in the ESI User-Agent, optional but recommended)</label>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
@@ -114,7 +128,7 @@ export function SettingsPage() {
           onClick={(e) => {
             if (!s.client_id) {
               e.preventDefault();
-              toast('Save a Client ID first', 'error');
+              toast('No EVE application configured — add a Client ID first', 'error');
             }
           }}
         >

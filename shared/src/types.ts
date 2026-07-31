@@ -12,7 +12,10 @@ export type PriceSource = 'esi_average' | 'hub_sell' | 'hub_buy' | 'hub_split';
 export type StockZone = 'purchase' | 'destination';
 
 export interface Settings {
+  /** Resolved EVE SSO client id: the user's own if they set one, else the bundled default. */
   client_id: string;
+  /** True when `client_id` is the app's bundled application (i.e. the user has no override). */
+  client_id_is_default: boolean;
   contact_email: string;
   price_source: PriceSource;
   hub_station_id: number;

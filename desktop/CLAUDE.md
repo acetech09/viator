@@ -38,8 +38,8 @@ unmodified React client, served over HTTP exactly as in `npm start`.
   escape hatch here — node-gyp needs Visual Studio and cannot build under a path containing a
   space. Before bumping Electron, check the release assets on
   `github.com/WiseLibs/better-sqlite3` for a matching `electron-vNNN` build.
-- **Port 8642 is fixed**, because it is part of the SSO callback URL users register with their
-  own EVE developer application. If it is taken, the app shows a dialog and quits rather than
+- **Port 8642 is fixed**, because it is part of the SSO callback URL registered with the EVE
+  developer application. If it is taken, the app shows a dialog and quits rather than
   moving; it probes `/api/health` first to tell an already-running Viator from a foreign process.
 - **The EVE SSO round-trip stays in-window** (it is ordinary top-level navigation). The
   `will-navigate` guard allows `localhost`, `127.0.0.1` and `*.eveonline.com` and sends anything

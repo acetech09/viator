@@ -19,23 +19,32 @@ On first launch it downloads the parts of the EVE Static Data Export it needs (i
 groups, categories — around 23 MB). That takes a few seconds and only repeats when CCP
 publishes a new build.
 
-## Registering an EVE application (needed for inventory filters)
+## Authorizing a character (needed for inventory filters)
 
 Lists and pricing work with no setup. To use **inventory filters** (subtracting owned
-assets), you must authorize one or more characters, which requires your own EVE
-developer application:
+assets), authorize one or more characters: open **Settings** and click **+ Add character**,
+then complete the EVE SSO login. The character appears in Settings, and its
+stations/structures become available as inventory filters. Viator ships with its own
+registered EVE application, so there is nothing to sign up for.
 
-1. Go to <https://developers.eveonline.com/applications> and **Create New Application**.
-2. **Connection Type:** *Authentication & API Access*.
-3. **Permissions (scopes):** add
+While you're in Settings it's worth adding a contact email — it's sent in the ESI
+User-Agent, which CCP appreciates if one of your requests ever misbehaves.
+
+### Using your own EVE application (optional)
+
+If you'd rather authorize against an application you control, register one at
+<https://developers.eveonline.com/applications>:
+
+1. **Create New Application**, **Connection Type:** *Authentication & API Access*.
+2. **Permissions (scopes):** add
    - `esi-assets.read_assets.v1`
    - `esi-universe.read_structures.v1` (so player structures can be named)
-4. **Callback URL:** `http://localhost:8642/sso/callback` (exactly this).
-5. Create the app, then copy its **Client ID**.
-6. In Viator, open **Settings**, paste the Client ID (and optionally a contact email —
-   it's sent in the ESI User-Agent, which CCP appreciates), and **Save**.
-7. Click **+ Add character** and complete the EVE SSO login. The character appears in
-   Settings, and its stations/structures become available as inventory filters.
+3. **Callback URL:** `http://localhost:8642/sso/callback` (exactly this).
+4. Copy the app's **Client ID** and paste it into Settings → *Use your own EVE application*.
+
+Characters authorized under one application have to be re-added after you switch, because
+EVE binds refresh tokens to the application that issued them. Clearing the field returns you
+to the built-in application.
 
 Assets refresh automatically when you open the app and via the **Refresh assets** button
 in the title bar (throttled to respect ESI cache timers).
