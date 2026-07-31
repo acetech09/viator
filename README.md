@@ -7,8 +7,7 @@ own at a station or structure.
 ## Install (Windows)
 
 Download **`Viator-Setup-x.y.z.exe`** from the
-[latest release](https://github.com/acetech09/viator/releases/latest) and run it. It installs
-for the current user only, so there is no admin prompt, and it starts Viator when it finishes.
+[latest release](https://github.com/acetech09/viator/releases/latest) and run it.
 
 Windows SmartScreen will warn you the first time. Choose **More info → Run anyway**.
 
@@ -18,56 +17,6 @@ next time you close the app. You'll see a "restart to apply" notice when one is 
 On first launch it downloads the parts of the EVE Static Data Export it needs (item names,
 groups, categories — around 23 MB). That takes a few seconds and only repeats when CCP
 publishes a new build.
-
-## Authorizing a character (needed for inventory filters)
-
-Lists and pricing work with no setup. To use **inventory filters** (subtracting owned
-assets), authorize one or more characters: open **Settings** and click **+ Add character**.
-
-The EVE login opens in **your normal web browser**, so your password manager and any EVE
-session you already have there just work. Sign in and approve the scopes; the browser shows a
-"signed in" page and asks permission to reopen Viator (tick *always allow* to skip this next
-time). Viator comes back to the front with the character already added, and you can close the
-browser tab. Viator keeps waiting while you do all this, and you can cancel if you change your
-mind.
-
-It's also worth adding a contact email under **Settings → Advanced → EVE application Client
-ID** — it's sent in the ESI User-Agent, which CCP appreciates if one of your requests ever
-misbehaves.
-
-### Using your own EVE application
-
-Register one at <https://developers.eveonline.com/applications>:
-
-1. **Create New Application**, **Connection Type:** *Authentication & API Access*.
-2. **Permissions (scopes):** add
-   - `esi-assets.read_assets.v1`
-   - `esi-universe.read_structures.v1` (so player structures can be named)
-3. **Callback URL:** copy it from **Settings → Advanced → EVE application Client ID** and use
-   it *exactly*. It differs by how you run Viator — the desktop app is registered against a
-   small hosted page that hands the login back to the app, the web version against
-   `http://localhost:8642/sso/callback`. CCP allows only one callback URL per application, so
-   an application registered for one cannot authorize the other.
-4. Copy the app's **Client ID** and paste it into that same screen.
-
-Characters authorized under one application have to be re-added after you switch, because
-EVE binds refresh tokens to the application that issued them. Clearing the field returns you
-to the built-in application, if this build has one.
-
-Assets refresh automatically when you open the app and via the **Refresh assets** button
-at the top of a list's **Existing stock** tab (throttled to respect ESI cache timers).
-
-## How things work
-
-- **Prices** default to CCP's official *estimated price* (`/markets/prices`). In Settings
-  you can switch to a market hub's lowest **sell**, highest **buy**, or **split**, and
-  choose the hub (Jita, Amarr, Dodixie, Rens, Hek).
-- **Copy (Multibuy)** copies `Item Name Quantity` per line — paste it into EVE's Multibuy
-  window. With filters active it copies the *remaining* quantities you still need to buy.
-- **Inventory filters** are a non-destructive view: they subtract owned quantities (item
-  hangar + containers + packaged ships; assembled ships and their contents are excluded).
-  Your stored list is never modified. Fully-covered items are shown struck-through and
-  excluded from the total.
 
 ## Data & privacy
 
@@ -109,23 +58,6 @@ npm run dist:desktop # build the installer into desktop/release/
 To build the current source and run it in the real desktop shell (no installer),
 double-click `dev-scripts\run-desktop.bat`. That path uses `%APPDATA%\Viator`, like the
 installed app.
-
-### Moving an existing database into the desktop app
-
-Close both the app and any `npm run dev` / `npm start` server first, so SQLite checkpoints cleanly.
-Then copy `data\viator.db` (plus `viator.db-wal` and `viator.db-shm` if they exist) into
-`%APPDATA%\Viator\`.
-
-## Layout
-
-```
-shared/   pure DTOs, ISK formatting, paste parser (unit-tested)
-server/   Fastify API, SQLite, ESI client, SSO/PKCE, SDE updater, asset & price pipelines
-client/   React + Vite UI
-desktop/  Electron shell + Windows packaging
-```
-
-Run `npm test` for the unit suites (formatting, paste parsing, fit parsing, asset classification).
 
 ## License
 
