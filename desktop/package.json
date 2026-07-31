@@ -1,0 +1,32 @@
+{
+  "name": "viator-desktop",
+  "productName": "Viator",
+  "version": "0.2.0",
+  "description": "Viator — EVE Online shopping-list manager, packaged as a desktop app",
+  "author": "acetech09",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "postinstall": "node scripts/rebuild-native.mjs",
+    "rebuild-native": "node scripts/rebuild-native.mjs",
+    "build": "tsc -p tsconfig.json && node scripts/bundle-server.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "electron .",
+    "dev": "electron . --dev-url=http://localhost:5173",
+    "dist": "electron-builder --win",
+    "publish": "electron-builder --win --publish always"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "electron-updater": "^6.8.9",
+    "electron-window-state": "^5.0.3"
+  },
+  "devDependencies": {
+    "electron": "~42.8.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.1",
+    "typescript": "^5.7.2"
+  }
+}

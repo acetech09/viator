@@ -1,0 +1,46 @@
+appId: com.acetech.viator
+productName: Viator
+copyright: Copyright © 2026 acetech09
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**
+  - package.json
+
+# The postinstall hook already fetched better-sqlite3's Electron prebuild. Letting
+# electron-builder rebuild would send it up to the repo root, where it would recompile
+# the server's Node-ABI copy and break `npm run dev`.
+npmRebuild: false
+
+# better-sqlite3's .node binary cannot be loaded from inside an asar archive.
+asarUnpack:
+  - "**/*.node"
+
+# The built UI is served off disk by Fastify, so it stays outside the asar.
+extraResources:
+  - from: ../client/dist
+    to: client
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.png
+
+nsis:
+  # Per-user install: no UAC prompt, which is what lets updates install silently.
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+
+artifactName: Viator-Setup-${version}.${ext}
+
+publish:
+  provider: github
+  owner: acetech09
+  repo: viator
+  # Drafts and prereleases are invisible to electron-updater.
+  releaseType: release
