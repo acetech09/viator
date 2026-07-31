@@ -1,0 +1,498 @@
+:root {
+  --bg: #0e1116;
+  --bg-elev: #161b22;
+  --bg-elev2: #1c2230;
+  --border: #2a3140;
+  --border-strong: #3a4459;
+  --text: #d6dae0;
+  --text-dim: #8b95a5;
+  --accent: #4c9be8;
+  --accent-dim: #2f6ea8;
+  --danger: #e05555;
+  --danger-dim: #7a2e2e;
+  --ok: #5cb85c;
+  --warn: #e0a030;
+  --row-hover: #1e2530;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'Cascadia Mono', 'Consolas', monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+a { color: var(--accent); }
+
+/* --- App shell --- */
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  height: 46px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.titlebar .logo {
+  height: 34px;
+  width: auto;
+  margin-right: 10px;
+  display: block;
+}
+.titlebar .brand {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-right: 16px;
+  color: var(--text);
+}
+.titlebar .spacer { flex: 1; }
+
+.tab {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 8px 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.tab:hover { background: var(--row-hover); color: var(--text); }
+.tab.active { color: var(--text); background: var(--bg-elev2); }
+
+.content { flex: 1; overflow: auto; padding: 20px; }
+
+/* --- Buttons --- */
+button {
+  font-family: var(--font);
+  font-size: 14px;
+}
+.btn {
+  background: var(--bg-elev2);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.btn:hover { background: var(--row-hover); border-color: var(--accent-dim); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.primary { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent); }
+.btn.danger { border-color: var(--danger-dim); color: var(--danger); }
+.btn.danger:hover { background: var(--danger-dim); color: #fff; }
+.btn.small { padding: 4px 9px; font-size: 12px; }
+.btn.icon { padding: 4px 8px; line-height: 1; }
+/* Button with a leading feather glyph (ButtonIcons) sitting flush-left of its label. */
+.btn.ico-btn { display: inline-flex; align-items: center; gap: 6px; }
+.btn-ico { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* --- "Show/hide owned items" button (eye icon + label) --- */
+.owned-toggle { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap; }
+
+/* --- Segmented Combined | Grouped selector (boxed to read as an either/or) --- */
+.segmented {
+  display: inline-flex; flex-shrink: 0; gap: 2px; padding: 2px;
+  background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: 7px;
+}
+.segmented button {
+  background: none; border: none; color: var(--text-dim);
+  padding: 5px 12px; border-radius: 5px; cursor: pointer; font-size: 13px;
+}
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--bg-elev2); color: var(--text); }
+
+/* --- Tables --- */
+table { border-collapse: collapse; width: 100%; }
+th {
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: var(--row-hover); }
+
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+/* Volume figures shown beside ISK — dimmed so price stays the primary read. */
+.vol { color: var(--text-dim); }
+
+/* --- Unified ISK + cargo display (CostVolume.tsx) ---
+   `<wallet> num ISK` ⇥ `<cargo> num m³`. Icons scale with font-size (height: 1em), so size is
+   set by the container: default is the small in-row size; .cv-lg matches the list total. The gap
+   between the two halves is the "tab" separation; both halves share the inherited font + weight. */
+.cost-volume { display: inline-flex; align-items: center; gap: 1.75em; font-size: 12px; font-variant-numeric: tabular-nums; }
+.cost-volume .cv-amt { display: inline-flex; align-items: center; gap: 0.35em; white-space: nowrap; }
+.cost-volume .cv-ico { height: 1.55em; width: auto; flex-shrink: 0; display: block; }
+.cost-volume.cv-lg { font-size: 18px; font-weight: 600; }
+/* Group/fit header subtotals read at the header's own size + weight. */
+.group-head .cost-volume { font-size: 14px; font-weight: 600; }
+
+/* --- Inputs --- */
+input[type='text'], input[type='number'], input[type='email'], textarea, select {
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 7px 10px;
+  font-family: var(--font);
+  font-size: 14px;
+  outline: none;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+textarea { resize: vertical; width: 100%; font-family: var(--mono); font-size: 13px; }
+
+.field-label { display: block; color: var(--text-dim); font-size: 12px; margin-bottom: 4px; }
+.row { display: flex; gap: 8px; align-items: center; }
+.col { display: flex; flex-direction: column; gap: 12px; }
+
+/* --- Header row for pages --- */
+.page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.page-header h1 { font-size: 20px; margin: 0; font-weight: 600; }
+.page-header .spacer { flex: 1; }
+
+/* Constrain the lists index so it isn't stretched edge-to-edge on wide screens. */
+.lists-page { max-width: 860px; margin: 0 auto; }
+
+/* --- Lists index: card view --- */
+.new-list-btn { display: block; width: min(420px, 100%); margin: 0 auto 14px; padding: 10px 14px; font-size: 15px; }
+.lists-toolbar { display: flex; gap: 8px; margin-bottom: 14px; }
+.lists-search { flex: 1; min-width: 0; }
+.sort-btn { flex-shrink: 0; white-space: nowrap; }
+
+.list-cards { display: flex; flex-direction: column; gap: 12px; }
+/* Card + its floating action buttons off to the right. */
+.list-card-row { display: flex; gap: 8px; align-items: center; }
+.list-card {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.12s;
+  overflow: hidden; /* keep the header bar inside the rounded corners */
+}
+.list-card:hover { border-color: var(--accent-dim); }
+
+/* Header bar: its own background separates it from the preview body below. */
+.list-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-elev2);
+  border-bottom: 1px solid var(--border);
+}
+.list-card-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-card-edited { font-size: 12.5px; flex-shrink: 0; }
+/* Fixed stat columns, sized to the capped character counts ("9999 items" / icon + "1.23b ISK" /
+   icon + "12.3k m³") so every card's figures line up. */
+.list-card-stat {
+  flex-shrink: 0;
+  display: inline-flex;
+  justify-content: flex-end;
+  width: 12ch;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+}
+.list-card-stat.vol { color: var(--text-dim); }
+/* Wallet/cargo icons on the stat columns (IskAmount/VolAmount outside a .cost-volume). */
+.list-card-stat .cv-amt { display: inline-flex; align-items: center; gap: 0.35em; white-space: nowrap; }
+.list-card-stat .cv-ico { height: 1.4em; width: auto; flex-shrink: 0; display: block; }
+
+/* Two preview columns (items | fits), no divider — just side-by-side text lists. */
+.list-card-body { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; padding: 12px 14px; }
+.list-card-preview { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 13px; }
+/* More lines than comfortably fit: clip at ~4½ rows and fade the tail out. */
+.list-card-preview.faded {
+  max-height: 118px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 98%);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 98%);
+}
+.preview-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.preview-line .item-icon { width: 20px; height: 20px; flex-shrink: 0; }
+.preview-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preview-qty { flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.list-card-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+
+/* --- Click-to-edit title (lists table + detail header) --- */
+.editable-title {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  transition: background 0.12s, box-shadow 0.12s, color 0.12s;
+}
+/* Read as its own interactive chip even while the whole row is highlighted: a lighter
+   raised fill + strong outline + accent text, distinct from the flat row-hover bg. */
+.editable-title:hover {
+  background: var(--border);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  color: var(--accent);
+}
+.title-input {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 2px 5px;
+  margin: -3px -6px;
+  min-width: 220px;
+}
+.title-input:focus { outline: none; }
+/* In the lists table, fill the cell width instead of forcing the column wider. */
+.title-input-fill { min-width: 0; width: 100%; margin-left: 0; margin-right: 0; }
+
+/* --- List detail two-column layout --- */
+.detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; height: 100%; }
+.panel {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.list-search-bar { padding: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.list-search-bar input { width: 100%; }
+
+.list-scroll { flex: 1; overflow: auto; }
+
+.list-total-bar {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-strong);
+  background: var(--bg-elev2);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-shrink: 0;
+}
+
+.item-icon { width: 28px; height: 28px; vertical-align: middle; border-radius: 3px; background: var(--bg-elev2); }
+.item-name { display: flex; align-items: center; gap: 8px; }
+
+tr.covered td { color: var(--text-dim); text-decoration: line-through; }
+tr.covered .item-icon { opacity: 0.4; filter: grayscale(1); }
+
+/* --- Existing-stock: section heading hover tooltip + manual-paste entry box --- */
+.info-tip { margin-left: 6px; color: var(--text-dim); font-size: 12px; cursor: help; vertical-align: middle; }
+.paste-entry { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+
+/* Existing-stock filter rows — a grid (not a table) so widths follow a priority cascade:
+   Location keeps a hard 35ch minimum (and fills any slack), Character shows its full name but
+   is the one that shrinks/truncates when the row is too tight to keep Location at 35ch; toggle,
+   button, and remove size to content. Rows are Fragments of 5 cells so the columns stay aligned. */
+.filter-grid {
+  display: grid;
+  grid-template-columns: auto auto minmax(35ch, 1fr) auto auto;
+  column-gap: 8px;
+  row-gap: 10px;
+  align-items: center;
+}
+.filter-grid > .fr-head { color: var(--text-dim); font-weight: 500; font-size: 13px; }
+.filter-grid > .fr-toggle { display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; padding-right: 12px; }
+
+/* --- Grouped view: one block per add-group --- */
+.group-block { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.group-block.disabled { opacity: 0.55; }
+.group-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; background: var(--bg-elev2); border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.12s ease;
+}
+/* Whole header is the collapse/expand target; highlights on hover. */
+.group-head:hover { background: #26303f; }
+.group-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.group-block table th { background: transparent; }
+
+/* Collapse caret on each group/fit header (visual only — the header handles the click). */
+.group-caret {
+  color: var(--text-dim); font-size: 22px; line-height: 1;
+  width: 20px; text-align: center; flex-shrink: 0;
+}
+.group-head:hover .group-caret { color: var(--text); }
+.group-block.collapsed .group-head { border-bottom: none; }
+
+/* --- Add-tab group manager rows --- */
+.group-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.group-row.active { background: rgba(76, 155, 232, 0.09); border-color: var(--accent-dim); }
+.group-row.hidden .group-info { opacity: 0.5; }
+
+/* Right-facing "active" pointer — a selector arrow marking the active group. */
+.active-arrow {
+  background: none; border: none; cursor: pointer; flex-shrink: 0;
+  display: inline-flex; align-items: center; padding: 2px 4px;
+  color: var(--border-strong);
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+.active-arrow svg { width: 18px; height: 18px; display: block; }
+.active-arrow:hover { color: var(--text-dim); }
+.active-arrow.is-active { color: var(--accent); transform: translateX(2px); }
+
+/* Eye visibility button (shown in the manager rows + grouped-view headers). */
+.eye-btn {
+  background: none; border: none; cursor: pointer; flex-shrink: 0;
+  display: inline-flex; align-items: center; padding: 2px;
+  color: var(--accent);
+  transition: color 0.12s ease;
+}
+.eye-btn.off { color: var(--text-dim); }
+.eye-btn:hover { color: var(--text); }
+.eye-btn svg { width: 18px; height: 18px; display: block; }
+
+.qty-cell { cursor: pointer; min-width: 60px; }
+.qty-cell input { width: 70px; text-align: right; padding: 3px 6px; }
+.qty-cell.shake { animation: shake 0.3s; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* --- Tab strips (right panel, list-view tabs, modal) — read as clear tabs --- */
+.subtabs { display: flex; gap: 4px; padding: 8px 8px 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.subtabs .tab {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 9px 16px;
+  border-radius: 6px 6px 0 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; /* overlap the strip's divider so the active underline sits on it */
+}
+.subtabs .tab.active { background: var(--bg-elev2); border-bottom-color: var(--accent); }
+/* ✕ inside the spawned Missing-items tab — clears the hauling check and removes the tab. */
+.tab-close { margin-left: 8px; color: var(--text-dim); cursor: pointer; }
+.tab-close:hover { color: var(--danger); }
+/* Multibuy-copy button pinned to the right edge of the list panel's tab strip. */
+.copy-multibuy { margin-left: auto; align-self: center; margin-bottom: 6px; }
+.copy-multibuy .btn-ico { width: 20px; height: 20px; }
+.panel-body { flex: 1; overflow: auto; padding: 14px; }
+
+/* --- Suggestion modal --- */
+.suggest-wrap { position: relative; flex: 1; }
+.suggest-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin-top: 2px;
+  background: var(--bg-elev2);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  max-height: 280px;
+  overflow: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.suggest-item { padding: 6px 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.suggest-item.active { background: var(--accent-dim); }
+.suggest-item:hover { background: var(--row-hover); }
+
+/* --- Misc --- */
+.muted { color: var(--text-dim); }
+.empty-state { text-align: center; color: var(--text-dim); padding: 60px 20px; }
+.error-text { color: var(--danger); font-size: 13px; white-space: pre-wrap; }
+.badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--warn); color: #000; }
+.badge.reauth { background: var(--danger); color: #fff; }
+
+.splash {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100vh; gap: 16px; color: var(--text-dim);
+}
+.spinner {
+  width: 32px; height: 32px; border: 3px solid var(--border-strong);
+  border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.settings-section {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: 8px; padding: 18px; margin-bottom: 16px; max-width: 720px;
+}
+.settings-section h2 { font-size: 15px; margin: 0 0 14px; }
+.settings-row { margin-bottom: 14px; }
+.settings-row input[type='text'], .settings-row input[type='email'], .settings-row select { width: 100%; max-width: 420px; }
+
+.char-card { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px; max-width: 420px; }
+.char-portrait { width: 40px; height: 40px; border-radius: 4px; }
+
+/* --- Toggle switch (bigger hit target than a native checkbox) --- */
+.switch { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.switch .track {
+  position: relative; width: 38px; height: 22px; border-radius: 999px;
+  background: var(--bg-elev2); border: 1px solid var(--border-strong);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.switch .thumb {
+  position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--text-dim); transition: transform 0.15s ease, background 0.15s ease;
+}
+.switch input:checked + .track { background: var(--accent-dim); border-color: var(--accent); }
+.switch input:checked + .track .thumb { transform: translateX(16px); background: #fff; }
+.switch input:focus-visible + .track { box-shadow: 0 0 0 2px var(--accent-dim); }
+.switch input:disabled { cursor: not-allowed; }
+.switch input:disabled + .track { opacity: 0.4; cursor: not-allowed; }
+
+/* --- Modal (centered overlay dialog) --- */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.modal {
+  background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: 10px;
+  width: 100%; max-width: 460px; max-height: 85vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+}
+.modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px; border-bottom: 1px solid var(--border); }
+.modal-body { padding: 8px 16px; overflow: auto; flex: 1; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--border); }
+.basic-hangar-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; }
+.bucket-row { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--border); }
+.bucket-row:last-child { border-bottom: none; }
+.bucket-row-head { border-bottom: 1px solid var(--border-strong); }
+
+.toast-wrap { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+.toast { background: var(--bg-elev2); border: 1px solid var(--border-strong); border-left-width: 3px; border-radius: 6px; padding: 10px 14px; min-width: 220px; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+.toast.error { border-left-color: var(--danger); }
+.toast.success { border-left-color: var(--ok); }
+.toast.info { border-left-color: var(--accent); }

@@ -1,0 +1,30 @@
+{
+  "name": "viator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "EVE Online shopping-list manager — single-user, locally hosted",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "predev": "npm -w shared run build",
+    "dev": "concurrently -k -n shared,server,client -c gray,blue,magenta \"npm:dev:shared\" \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:shared": "npm -w shared run dev",
+    "dev:server": "npm -w server run dev",
+    "dev:client": "npm -w client run dev",
+    "build": "npm -w shared run build && npm -w server run build && npm -w client run build",
+    "start": "npm -w server run start",
+    "test": "npm -w shared run test && npm -w server run test",
+    "typecheck": "npm -w shared run typecheck && npm -w server run typecheck && npm -w client run typecheck"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
