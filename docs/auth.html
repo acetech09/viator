@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The authorization code arrives in this page's query string. no-referrer keeps it out
+         of any outbound Referer header. -->
+    <meta name="referrer" content="no-referrer" />
+    <title>Viator — Signing in</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #0e1116;
+        color: #d7dde5;
+        font: 15px/1.6 system-ui, -apple-system, Segoe UI, sans-serif;
+      }
+      main { max-width: 30rem; padding: 2rem; text-align: center; }
+      h1 { font-size: 1.3rem; margin: 0 0 0.6rem; color: #7fd1a0; }
+      body.bad h1 { color: #e58b8b; }
+      p { margin: 0.5rem 0; color: #98a3b3; }
+      .btn {
+        display: inline-block;
+        margin-top: 1.2rem;
+        padding: 0.6rem 1.4rem;
+        border-radius: 6px;
+        background: #243040;
+        border: 1px solid #3a4a60;
+        color: #d7dde5;
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+      .btn:hover { background: #2c3a4d; border-color: #4a5f7a; }
+      .fine { font-size: 0.85rem; color: #6d7787; margin-top: 1.4rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 id="heading">Signed in</h1>
+      <p id="detail">Handing you back to Viator…</p>
+      <p><a class="btn" id="open" href="#">Open Viator</a></p>
+      <p class="fine" id="fine">If nothing happens, use the button above. You can close this tab afterwards.</p>
+    </main>
+    <script>
+      // EVE SSO redirects here after login; this page's only job is to hand the authorization
+      // code to the desktop app over its registered URL scheme. It is the callback URL of the
+      // Viator desktop application, so it must keep working for EVERY released version —
+      // change it only in backwards-compatible ways.
+      //
+      // The scheme below must match SSO_PROTOCOL in server/src/config.ts.
+      (function () {
+        var params = new URLSearchParams(location.search);
+        var code = params.get('code');
+        var state = params.get('state');
+        var error = params.get('error');
+        var heading = document.getElementById('heading');
+        var detail = document.getElementById('detail');
+        var open = document.getElementById('open');
+        var fine = document.getElementById('fine');
+
+        function fail(message) {
+          document.body.className = 'bad';
+          heading.textContent = 'Sign-in failed';
+          detail.textContent = message;
+          open.hidden = true;
+          fine.textContent = 'Go back to Viator and try again.';
+        }
+
+        if (error) return fail(params.get('error_description') || error);
+        if (!code || !state) return fail('This page was opened without a sign-in result.');
+
+        var deepLink =
+          'eveauth-viator://sso/callback?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state);
+        open.href = deepLink;
+
+        // Don't leave a live authorization code in the address bar or browser history. The
+        // button above already holds it, so the hand-off still works after this.
+        history.replaceState(null, '', location.pathname);
+
+        // Browsers may require a user gesture before handing a custom scheme to the OS, which
+        // is why the button is the real path — this just saves a click where it's allowed.
+        setTimeout(function () {
+          location.href = deepLink;
+        }, 150);
+      })();
+    </script>
+  </body>
+</html>

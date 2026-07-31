@@ -54,9 +54,17 @@ export function EveApplicationPanel({ onBack }: { onBack: () => void }) {
           <a href="https://developers.eveonline.com/applications" target="_blank" rel="noreferrer">
             developers.eveonline.com
           </a>
-          . Set the callback URL to <code>http://localhost:8642/sso/callback</code> and grant the scopes{' '}
+          . Set the callback URL to <code>{s.sso_redirect}</code> and grant the scopes{' '}
           <code>esi-assets.read_assets.v1</code> and <code>esi-universe.read_structures.v1</code>. Paste the Client ID
           below — leave it blank to use the built-in application. Changing it means re-authorizing your characters.
+        </p>
+        <p className="muted">
+          {/* The callback differs by build, so it is read from the server rather than written here:
+              the desktop app receives it through its registered eveauth-viator:// URL scheme, while web
+              mode uses the loopback address. An application registered for one will not work
+              with the other. */}
+          That callback URL is the one <em>this</em> build uses — the desktop app and the web version differ, so an
+          application registered for one cannot authorize the other.
         </p>
         <div className="settings-row">
           <label className="field-label">Client ID</label>

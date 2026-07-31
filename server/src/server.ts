@@ -12,6 +12,12 @@ import { backfillAssetBuckets } from './assets/pipeline.js';
 
 export interface RunningServer {
   app: FastifyInstance;
+  /**
+   * The port actually bound. Equal to `PORT` unless that was 0 (the desktop shell asks for
+   * an ephemeral port), in which case it is whatever the OS handed out — the shell needs it
+   * to know which URL to load.
+   */
+  port: number;
   /** Stops accepting requests and closes the database (checkpointing WAL). */
   close(): Promise<void>;
 }
@@ -19,8 +25,8 @@ export interface RunningServer {
 /**
  * Boots the whole backend and resolves once it is listening.
  *
- * Callers own the lifecycle: `listen` errors (EADDRINUSE in particular) reject
- * rather than exiting the process, so the desktop shell can show a dialog.
+ * Callers own the lifecycle: `listen` errors reject rather than exiting the process, so the
+ * desktop shell can show a dialog.
  */
 export async function startServer(): Promise<RunningServer> {
   ensureDataDir();
@@ -60,10 +66,14 @@ export async function startServer(): Promise<RunningServer> {
   startSde().catch((err) => app.log.error({ err }, 'SDE bootstrap failed'));
 
   await app.listen({ port: PORT, host: HOST });
-  app.log.info(`viator server listening on http://${HOST}:${PORT}`);
+  // With PORT=0 the requested port tells us nothing; ask the socket what it got.
+  const address = app.server.address();
+  const port = typeof address === 'object' && address ? address.port : PORT;
+  app.log.info(`viator server listening on http://${HOST}:${port}`);
 
   return {
     app,
+    port,
     close: async () => {
       await app.close();
       closeDb();

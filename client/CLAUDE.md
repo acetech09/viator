@@ -43,7 +43,7 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   (which renders it as the spawnable **Missing items** tab) — text/result live here so they
   survive right-panel subtab switches.
 - `SettingsPage.tsx` — a **centered** `.settings-page` column (like `ListsPage`) holding, in order:
-  character management (`/sso/login`), price source + hub, `DefaultLocationsSection`, and an
+  character management (`AddCharacterButton`), price source + hub, `DefaultLocationsSection`, and an
   **Advanced** section. Advanced is a plain section whose body is a list of `.settings-nav-row`
   buttons, each opening a **sub-page** (`AdvancedPage` state in `SettingsPage`, which renders the
   sub-page *instead of* `SettingsMain` — no routing involved). Its one entry today is **EVE
@@ -224,12 +224,26 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   cells** (Unit / Unit m³ / Total / Total m³ — `PriceVolCells` in `list-table/shared.tsx`) stay
   plain `formatIsk`/`formatVolume` under their labeled columns — the icon+label pairing is only
   for the combined summary spots.
+- `AddCharacterButton.tsx` — the whole SSO login flow, in one button. **The login never happens
+  in this window**: it `POST`s `/api/sso/start`, hands the returned authorize URL to
+  `openExternal` (system browser in the desktop app, new tab on the web), and then **polls**
+  `GET /api/sso/status?state=` every second until `done`/`error`. Polling rather than a redirect
+  is forced by where the callback lands — a tab in the user's default browser, or Electron's
+  bounce page → `eveauth-viator://` handler — neither of which can navigate the page that started the flow. While
+  waiting it renders a `.sso-waiting` row (small spinner + Cancel, which just stops polling; the
+  attempt itself harmlessly expires server-side). On success it toasts and invalidates
+  `['characters']`. The poll effect's deps include `toast`/`qc` **because both are stable**
+  (`useCallback` / React Query) — an unstable dep there would reset the interval every render and
+  it would never fire.
 - `EveApplicationPanel.tsx` — the **EVE application Client ID** sub-page of Advanced settings (own
   `.settings-page` column + a `← Advanced` back button): Client ID and contact email, with the
   registration instructions and the Save button. Both are optional overrides of shipped defaults;
   the server bundles an application, so when `client_id_is_default` is set the Client ID field
-  renders blank (never echoing the bundled id) and saving it empty clears the override. Self-
-  contained — it runs its own `settings` query + save mutation rather than taking them as props.
+  renders blank (never echoing the bundled id) and saving it empty clears the override. The
+  callback URL in the instructions comes from `settings.sso_redirect` — **never hardcode it**, it
+  differs between the desktop build (the hosted bounce page) and web (`http://localhost:8642/…`),
+  and an application registered for one cannot authorize the other. Self-contained — it runs its
+  own `settings` query + save mutation rather than taking them as props.
 - `DefaultLocationsSection.tsx` — global defaults on/off toggle, then two `ZoneDefaults` blocks
   (**Purchase location** / **Destination**) each listing that zone's saved defaults + an add row;
   defaults carry a `zone` and seed the matching existing-stock section on new lists.

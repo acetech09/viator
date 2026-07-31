@@ -24,6 +24,13 @@ extraResources:
   - from: ../client/dist
     to: client
 
+# The EVE SSO callback URL. NSIS registers the scheme at install time so Windows can hand
+# `eveauth-viator://sso/callback?code=…` to the running app — which is why the app needs no fixed
+# port. Must match SSO_PROTOCOL in server/src/config.ts and PROTOCOL in desktop/src/main.ts.
+protocols:
+  - name: Viator SSO callback
+    schemes: [eveauth-viator]
+
 win:
   target:
     - target: nsis

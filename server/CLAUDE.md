@@ -5,29 +5,60 @@ compiled `dist/`.
 
 - `src/server.ts` — **`startServer()`**, the whole boot sequence (opens+migrates DB, registers
   routes, kicks off `startSde()` in the background, serves `CLIENT_DIST` only when
-  `NODE_ENV=production`, then listens). Returns `{ app, close() }` and lets `listen` errors
-  reject, so the caller owns the lifecycle. `close()` shuts Fastify down and closes the DB.
+  `NODE_ENV=production`, then listens). Returns `{ app, port, close() }` and lets `listen`
+  errors reject, so the caller owns the lifecycle. `port` is read back off the socket, not
+  assumed from `PORT` — the desktop shell passes `VIATOR_PORT=0` and needs to know what the
+  OS handed out. `close()` shuts Fastify down and closes the DB.
 - `src/index.ts` — the CLI wrapper around it (`npm start`, `tsx watch`): calls `startServer()`
   and maps SIGINT/SIGTERM to `close()`. The Electron shell in `desktop/` imports
   `startServer()` directly instead of running this file.
 
 ## Config — `src/config.ts`
 
-All constants: ports (8642), `COMPATIBILITY_DATE` (pinned ESI date — bump deliberately),
+All constants: ports, `COMPATIBILITY_DATE` (pinned ESI date — bump deliberately),
 ESI/SSO/SDE/image URLs, `SSO_SCOPES`, `SSO_REDIRECT`, default hub (Jita 4-4 / The Forge).
 
-`DEFAULT_SSO_CLIENT_ID` is the **bundled EVE application** (overridable at build/run time via
-`VIATOR_SSO_CLIENT_ID`), so users don't have to register their own. Safe to ship: PKCE is a
-public-client flow with no secret, and the id is already visible in the SSO redirect. The
-registration it names must use `SSO_REDIRECT` as its callback and grant at least `SSO_SCOPES`
-(a request may only ask for scopes the registration already has). Changing the id invalidates
-every stored refresh token — EVE binds them to the issuing client.
+**`SSO_MODE`** (`'desktop'` when `VIATOR_SSO_MODE=desktop`, else `'web'`) selects how the
+authorization code comes back, and everything SSO-shaped follows from it.
 
-**Three values are env-overridable** so the packaged desktop app can relocate them:
-`DATA_DIR` (`VIATOR_DATA_DIR` — `DB_PATH` and the SDE temp zip follow it), `CLIENT_DIST`
-(`VIATOR_CLIENT_DIST`) and `APP_VERSION` (`VIATOR_APP_VERSION`, reported in the ESI
-User-Agent). Unset in web mode, where the repo-relative fallbacks apply. They are read at
-module-evaluation time, so anything setting them must do so **before** importing this module.
+Desktop takes **two hops**: EVE → a static bounce page (`docs/auth.html`, served by GitHub
+Pages) → `eveauth-viator://sso/callback` → the running app. EVE *can* redirect straight to the
+scheme, and the app handles that identically — but a custom scheme isn't a document, so the
+browser hands it to the OS and strands the tab on EVE's half-finished redirect, spinning
+forever. The bounce page exists purely to give the browser somewhere to land. Its cost is that
+a desktop login needs that page reachable; `DESKTOP_SSO_CALLBACK` (env:
+`VIATOR_SSO_CALLBACK_URL`) points at it.
+
+| | `web` | `desktop` |
+| --- | --- | --- |
+| `SSO_REDIRECT` | `http://localhost:8642/sso/callback` | `https://acetech09.github.io/viator/auth.html` (→ deep-links to `eveauth-viator://sso/callback`) |
+| Callback route | `GET /sso/callback` (renders a "go back to Viator" page) | `POST /api/sso/complete`, posted by the Electron shell |
+| Bundled client id | `WEB_SSO_CLIENT_ID` (**empty — see below**) | `DESKTOP_SSO_CLIENT_ID` |
+| Server port | fixed `WEB_PORT` (8642) | ephemeral (`VIATOR_PORT=0`) |
+
+CCP allows **one callback URL per application**, which is why there are two bundled client id
+slots rather than one app serving both. Each is safe to ship (PKCE public client, no secret,
+and the id is visible in the SSO redirect anyway) and each must grant at least `SSO_SCOPES` —
+a request may only ask for scopes its registration already has.
+
+**Only the desktop slot is filled.** The single registered application was repointed from the
+loopback callback to `eveauth-viator://sso/callback`, so `WEB_SSO_CLIENT_ID` is deliberately
+empty: web mode falls back to the "no application bundled" path (Settings asks for a Client
+ID), or `VIATOR_SSO_CLIENT_ID` for a local run. Filling it in requires registering a *second*
+application against `http://localhost:8642/sso/callback`. Note that repointing a callback does
+**not** invalidate refresh tokens — those are bound to the client id, which didn't change —
+but changing an *id* does.
+
+`PORT` is `VIATOR_PORT ?? WEB_PORT`. **Only web mode needs a fixed port** — it is baked into
+that registration's callback and is what Vite proxies to. The desktop app has no port in any
+registered URL, so it asks for 0 and can never fail to start because 8642 is taken.
+
+**Five values are env-overridable** so the packaged desktop app can relocate them: `DATA_DIR`
+(`VIATOR_DATA_DIR` — `DB_PATH` and the SDE temp zip follow it), `CLIENT_DIST`
+(`VIATOR_CLIENT_DIST`), `APP_VERSION` (`VIATOR_APP_VERSION`, reported in the ESI User-Agent),
+`PORT` (`VIATOR_PORT`) and `SSO_MODE` (`VIATOR_SSO_MODE`). Unset in web mode, where the
+repo-relative fallbacks apply. They are read at module-evaluation time, so anything setting
+them must do so **before** importing this module.
 
 ## Database — `src/db/`
 
@@ -62,7 +93,9 @@ module-evaluation time, so anything setting them must do so **before** importing
   defaults to `esi_average`). `client_id` is **resolved**: a non-empty stored value is the
   user's override, anything else falls back to `DEFAULT_SSO_CLIENT_ID`, and
   `client_id_is_default` tells the UI which it got (so the Settings field stays blank rather
-  than echoing the bundled id back). Saving an empty string clears the override.
+  than echoing the bundled id back). Saving an empty string clears the override. `sso_redirect`
+  is **read-only** — it comes from `SSO_MODE`, never from storage, and is exposed so the UI can
+  show the callback URL a user must register their own application against (it differs per mode).
 
 ## Routes — `src/routes/` (all registered in `index.ts`)
 
@@ -73,7 +106,7 @@ module-evaluation time, so anything setting them must do so **before** importing
 | `lists/groups.ts` | `/groups` POST + `:gid` PUT(rename/toggle/set `fit_qty` multiplier)/DELETE; `/active-group` PUT; `/fits` POST(create from pyfa paste, `resolveFit`) + `:gid` PUT(re-paste and/or set `fit_qty`) — fit delete/toggle reuse the `/groups` routes. **Groupless lists**: a list can have **0 groups** — its items are a flat, ungrouped list. New lists start groupless; `/groups` POST on a groupless list *promotes* it by adding a single starter "Default group" that wraps any existing items (regardless of whether the list had items), and adding a fit promotes it too (`ensureManualHomeForUngrouped`); deleting the **last manual group** returns the list to groupless and **keeps** its items as ungrouped (a last *fit* group deletes normally). Invariant (code, not schema): a list has either 0 groups (all items ungrouped) OR ≥1 group (no ungrouped items) — `resolveTargetGroup` (creates a Default home if a grouped list somehow lacks a manual group) + `fixActiveGroup` (points/clears `active_group_id`) + `upsertListItem` (merges ungrouped rows by hand, since NULL escapes the UNIQUE index) uphold it. |
 | `lists/stock.ts` | Existing-stock sources, all zone-scoped: `/filters` GET/PUT (both take `?zone=purchase\|destination`, default purchase — PUT replaces only that zone's rows); `/filters/buckets` GET(enumerate containers+ships at a character+location+`zone`, with saved/default enablement)/PUT(save a row's bucket selection incl. `zone`); `/asset-pastes` GET/POST (`?zone=`) + `:pasteId` PUT(toggle)/DELETE. |
 | `settings.ts` | `/api/settings` GET/PUT |
-| `sso.ts` | `/api/characters` list/delete; `/sso/login`, `/sso/callback` (PKCE) |
+| `sso.ts` | `/api/characters` list/delete; the PKCE login flow — `POST /api/sso/start` (returns `{state, url}`; the client opens `url` in the **user's default browser** rather than being redirected), `GET /api/sso/status?state=` (poll target: `pending`/`done`/`error`), and the two mode-specific callback sinks, `GET /sso/callback` (web — records the outcome and renders a self-contained "go back to Viator" page; deliberately **no** redirect, since that tab usually isn't the tab Viator is open in) and `POST /api/sso/complete` (desktop — the Electron shell posts the params it got from the `eveauth-viator://` URL). Both funnel through `finishAuth`, which exchanges the code, stores the character, and records the result on the attempt. Attempts live in an **in-memory map** keyed by `state` (30-min TTL), so they don't survive a restart — the status endpoint reports an unknown state as expired. A re-delivered callback replays the stored result instead of re-exchanging a single-use code. Token-endpoint failures are logged in full but shown as `friendlyAuthError` text: EVE answers with an HTML error page, which is unfit for a toast. |
 | `assets.ts` | `/api/assets/refresh` + `/status`; `/api/characters/:id/locations`; `/api/default-locations` CRUD (rows carry `zone`; DELETE is `/:characterId/:locationId/:zone`) |
 | `sde.ts` | `/api/sde/status`; `/api/sde/types-index` (ETagged by build **+ a payload-shape salt** — bump `INDEX_SHAPE` when the row shape changes or cached clients 304 onto the old one). Rows are `[type_id, name]`, with a trailing `1` on **demoted** types (categories 9 Blueprint / 30 Apparel / 91 SKINs / 2118 Personalization, plus a `SKIN` name match for the crates filed under Special Edition Assets). That's ~8.8k of ~19k searchable types; the client sorts them below every ordinary match instead of hiding them. Accessories (5) is deliberately **not** demoted — skill injectors/Aurum are real purchases. |
 

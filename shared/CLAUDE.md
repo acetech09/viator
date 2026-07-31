@@ -9,7 +9,8 @@ the built output, so relative imports inside end in `.js`.
 - `src/types.ts` — all DTOs crossing the API boundary: `Settings`, `ListSummary`,
   `ListOverview` (the lists-index card: totals + capped value-sorted `top_items`/`top_fits`
   previews), `PricedItem`/`PricedList`, `CharacterSummary`, `LocationSummary`, `FilterRow`,
-  `SdeStatus`, `AssetRefreshStatus`, etc. Change a shape here and both sides see it.
+  `SdeStatus`, `AssetRefreshStatus`, `SsoStart`/`SsoStatus` (the browser-based login handshake),
+  etc. Change a shape here and both sides see it.
 - `src/format.ts`
   - `formatIsk(n)` — 3 significant figures + `b`/`m`/`k` suffix; `null`/`NaN` → `—`;
     keeps sign. (`184500` → `185k` because it rounds at 3 sig figs — intentional.)

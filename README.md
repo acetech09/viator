@@ -22,31 +22,37 @@ publishes a new build.
 ## Authorizing a character (needed for inventory filters)
 
 Lists and pricing work with no setup. To use **inventory filters** (subtracting owned
-assets), authorize one or more characters: open **Settings** and click **+ Add character**,
-then complete the EVE SSO login. The character appears in Settings, and its
-stations/structures become available as inventory filters. Viator ships with its own
-registered EVE application, so there is nothing to sign up for.
+assets), authorize one or more characters: open **Settings** and click **+ Add character**.
+
+The EVE login opens in **your normal web browser**, so your password manager and any EVE
+session you already have there just work. Sign in and approve the scopes; the browser shows a
+"signed in" page and asks permission to reopen Viator (tick *always allow* to skip this next
+time). Viator comes back to the front with the character already added, and you can close the
+browser tab. Viator keeps waiting while you do all this, and you can cancel if you change your
+mind.
 
 It's also worth adding a contact email under **Settings → Advanced → EVE application Client
 ID** — it's sent in the ESI User-Agent, which CCP appreciates if one of your requests ever
 misbehaves.
 
-### Using your own EVE application (optional)
+### Using your own EVE application
 
-If you'd rather authorize against an application you control, register one at
-<https://developers.eveonline.com/applications>:
+Register one at <https://developers.eveonline.com/applications>:
 
 1. **Create New Application**, **Connection Type:** *Authentication & API Access*.
 2. **Permissions (scopes):** add
    - `esi-assets.read_assets.v1`
    - `esi-universe.read_structures.v1` (so player structures can be named)
-3. **Callback URL:** `http://localhost:8642/sso/callback` (exactly this).
-4. Copy the app's **Client ID** and paste it into **Settings → Advanced → EVE application
-   Client ID**.
+3. **Callback URL:** copy it from **Settings → Advanced → EVE application Client ID** and use
+   it *exactly*. It differs by how you run Viator — the desktop app is registered against a
+   small hosted page that hands the login back to the app, the web version against
+   `http://localhost:8642/sso/callback`. CCP allows only one callback URL per application, so
+   an application registered for one cannot authorize the other.
+4. Copy the app's **Client ID** and paste it into that same screen.
 
 Characters authorized under one application have to be re-added after you switch, because
 EVE binds refresh tokens to the application that issued them. Clearing the field returns you
-to the built-in application.
+to the built-in application, if this build has one.
 
 Assets refresh automatically when you open the app and via the **Refresh assets** button
 in the title bar (throttled to respect ESI cache timers).
@@ -82,7 +88,15 @@ npm run dev          # server on :8642, Vite UI on http://localhost:5173
 
 For a production-style single-process run, `npm run build` then `npm start`
 (serves UI + API on <http://localhost:8642>). Note these use the repo's `data/` folder,
-*not* the installed app's database, and only one of them can hold port 8642 at a time.
+*not* the installed app's database, and only one of the two web modes can hold port 8642 at a
+time. The installed desktop app takes whatever port the OS gives it, so it never collides
+with either.
+
+**Authorizing a character when running from source needs your own EVE application.** The
+bundled one is registered against the desktop app's `eveauth-viator://sso/callback`, and CCP
+allows only one callback URL per application — so register a second one with the callback
+`http://localhost:8642/sso/callback` and enter its Client ID under **Settings → Advanced**.
+Lists, pricing and Multibuy all work without this; only inventory filters need a character.
 
 To work on the desktop shell itself, see [`desktop/CLAUDE.md`](desktop/CLAUDE.md):
 

@@ -9,8 +9,9 @@ rem This is the production-shaped desktop run: the packaged server bundle, the b
 rem client, and the same %APPDATA%\Viator database the installed app uses. It is NOT
 rem the HMR dev loop (that is "npm run dev" + "npm run dev:desktop").
 rem
-rem Port 8642 must be free - stop any "npm run dev" / "npm start" / installed Viator
-rem first, or the window will just report the port is in use.
+rem The desktop shell binds whatever port the OS gives it, so it does not collide with a
+rem running "npm run dev" / "npm start". It does hold a single-instance lock, so close an
+rem already-running Viator first or this launch will just focus that one.
 rem
 rem Flags:
 rem   --no-build   skip both builds and launch whatever is already compiled

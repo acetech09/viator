@@ -13,6 +13,8 @@ import type {
   PricedList,
   SdeStatus,
   Settings,
+  SsoStart,
+  SsoStatus,
   StockZone,
 } from '@viator/shared';
 
@@ -125,6 +127,9 @@ export const api = {
   // characters + assets
   characters: () => req<CharacterSummary[]>('/api/characters'),
   deleteCharacter: (id: number) => req<void>(`/api/characters/${id}`, { method: 'DELETE' }),
+  // SSO login runs in the user's browser, so the page starts an attempt and then polls it.
+  ssoStart: () => req<SsoStart>('/api/sso/start', { method: 'POST' }),
+  ssoStatus: (state: string) => req<SsoStatus>(`/api/sso/status?state=${encodeURIComponent(state)}`),
   locations: (characterId: number) => req<LocationSummary[]>(`/api/characters/${characterId}/locations`),
   refreshAssets: () => req<AssetRefreshStatus[]>('/api/assets/refresh', { method: 'POST' }),
   assetStatus: () => req<AssetRefreshStatus[]>('/api/assets/status'),

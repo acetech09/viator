@@ -16,12 +16,37 @@ export interface Settings {
   client_id: string;
   /** True when `client_id` is the app's bundled application (i.e. the user has no override). */
   client_id_is_default: boolean;
+  /**
+   * The callback URL this build authorizes against — the hosted bounce page in the desktop
+   * app (it deep-links on to the app), `http://localhost:8642/sso/callback` in web mode.
+   * Read-only; the UI shows it so a user registering their own application copies the right
+   * value.
+   */
+  sso_redirect: string;
   contact_email: string;
   price_source: PriceSource;
   hub_station_id: number;
   hub_region_id: number;
   defaults_enabled: boolean;
 }
+
+/** `POST /api/sso/start` — an authorization attempt the client then opens in the browser. */
+export interface SsoStart {
+  /** Opaque id for this attempt; poll `/api/sso/status?state=…` with it. */
+  state: string;
+  /** The EVE SSO authorize URL to open in the user's default browser. */
+  url: string;
+}
+
+/**
+ * `GET /api/sso/status?state=…` — where an in-flight attempt got to. The browser half of the
+ * flow lands on the server (web) or on the Electron protocol handler (desktop), never back in
+ * the page that started it, so the UI polls for the outcome instead of being navigated to it.
+ */
+export type SsoStatus =
+  | { status: 'pending' }
+  | { status: 'done'; character: CharacterSummary }
+  | { status: 'error'; message: string };
 
 export interface ListSummary {
   id: number;

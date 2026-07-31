@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { PriceSource, Settings } from '@viator/shared';
 import { api } from '../api';
 import { useToast } from '../toast';
+import { AddCharacterButton } from '../components/AddCharacterButton';
 import { DefaultLocationsSection } from '../components/DefaultLocationsSection';
 import { EveApplicationPanel } from '../components/EveApplicationPanel';
 
@@ -81,18 +82,7 @@ function SettingsMain({ onOpenAdvanced }: { onOpenAdvanced: (p: AdvancedPage) =>
             </button>
           </div>
         ))}
-        <a
-          className="btn"
-          href="/sso/login"
-          onClick={(e) => {
-            if (!s.client_id) {
-              e.preventDefault();
-              toast('No EVE application configured — add a Client ID first', 'error');
-            }
-          }}
-        >
-          + Add character
-        </a>
+        <AddCharacterButton hasApplication={!!s.client_id} />
       </div>
 
       <div className="settings-section">

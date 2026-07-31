@@ -444,6 +444,10 @@ tr.covered .item-icon { opacity: 0.4; filter: grayscale(1); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* "Waiting for the login in your browser…" row, in place of the + Add character button. */
+.sso-waiting { display: flex; align-items: center; gap: 10px; }
+.sso-waiting .spinner { width: 14px; height: 14px; border-width: 2px; }
+
 /* Centered like the lists index, so settings isn't pinned to the left edge on wide screens. */
 .settings-page { max-width: 720px; margin: 0 auto; }
 

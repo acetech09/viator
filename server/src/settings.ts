@@ -1,10 +1,11 @@
 import type { PriceSource, Settings } from '@viator/shared';
 import { getDb } from './db/db.js';
-import { DEFAULT_HUB_REGION_ID, DEFAULT_HUB_STATION_ID, DEFAULT_SSO_CLIENT_ID } from './config.js';
+import { DEFAULT_HUB_REGION_ID, DEFAULT_HUB_STATION_ID, DEFAULT_SSO_CLIENT_ID, SSO_REDIRECT } from './config.js';
 
 const DEFAULTS: Settings = {
   client_id: DEFAULT_SSO_CLIENT_ID,
   client_id_is_default: true,
+  sso_redirect: SSO_REDIRECT,
   contact_email: '',
   price_source: 'esi_average',
   hub_station_id: DEFAULT_HUB_STATION_ID,
@@ -23,6 +24,8 @@ export function getSettings(): Settings {
   return {
     client_id: ownClientId || DEFAULTS.client_id,
     client_id_is_default: !ownClientId,
+    // Fixed by how this build was launched, not stored — it is never part of a patch.
+    sso_redirect: DEFAULTS.sso_redirect,
     contact_email: map.get('contact_email') ?? DEFAULTS.contact_email,
     price_source: (VALID_SOURCES.includes(map.get('price_source') as PriceSource)
       ? (map.get('price_source') as PriceSource)
