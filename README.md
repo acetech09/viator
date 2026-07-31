@@ -1,33 +1,27 @@
 # Viator
 
-A single-user, locally-hosted web tool for managing **EVE Online** shopping lists:
-build lists, price them against the market, copy them straight into the in-game
-Multibuy window, and subtract items you already own at a station or structure.
+A local tool for managing **EVE Online** shopping lists: build lists, price them against the
+market, copy them straight into the in-game Multibuy window, and subtract items you already
+own at a station or structure.
 
-## Requirements
+Everything runs on your own machine. There is no server to sign up for and no account —
+the only network traffic is to CCP's own APIs.
 
-- **Node.js 22+** (LTS). The app uses `better-sqlite3`, which ships prebuilt binaries
-  for current LTS Node on Windows/macOS/Linux.
-- An internet connection (the app talks to EVE's ESI API, SSO, the Static Data Export,
-  and the image server).
+## Install (Windows)
 
-## Install & run
+Download **`Viator-Setup-x.y.z.exe`** from the
+[latest release](https://github.com/acetech09/viator/releases/latest) and run it. It installs
+for the current user only, so there is no admin prompt, and it starts Viator when it finishes.
 
-```bash
-npm install          # installs all workspaces
-npm run dev          # dev: server on :8642, Vite UI on http://localhost:5173
-```
+Windows SmartScreen will warn you the first time, because the installer isn't code-signed
+(a certificate costs several hundred a year for a free tool). Choose **More info → Run anyway**.
 
-Open **http://localhost:5173**. On first launch the app downloads the parts of the EVE
-Static Data Export it needs (item names, groups, categories) — this takes a few seconds
-and only repeats when CCP publishes a new SDE build.
+Viator checks for updates on launch, downloads them in the background, and applies them the
+next time you close the app. You'll see a "restart to apply" notice when one is ready.
 
-For a production-style single-process run:
-
-```bash
-npm run build        # builds shared, server, and client
-npm start            # serves the built UI + API on http://localhost:8642
-```
+On first launch it downloads the parts of the EVE Static Data Export it needs (item names,
+groups, categories — around 23 MB). That takes a few seconds and only repeats when CCP
+publishes a new build.
 
 ## Registering an EVE application (needed for inventory filters)
 
@@ -64,9 +58,38 @@ in the title bar (throttled to respect ESI cache timers).
 
 ## Data & privacy
 
-Everything lives in `data/viator.db` (SQLite) in the project folder. Refresh tokens are
-stored there in plain text — acceptable for a single-user localhost app; keep the folder
-private. Delete `data/` to reset the app completely.
+Nothing leaves your machine except calls to CCP's APIs. The desktop app keeps everything in
+one SQLite database at **`%APPDATA%\Viator\viator.db`**; running from source uses `data/viator.db`
+in the project folder instead. Refresh tokens are stored there in plain text — acceptable for a
+single-user local app, but keep the folder to yourself. Delete the database to reset Viator
+completely.
+
+## Running from source
+
+Requires **Node.js 22+**.
+
+```bash
+npm install          # installs all workspaces
+npm run dev          # server on :8642, Vite UI on http://localhost:5173
+```
+
+For a production-style single-process run, `npm run build` then `npm start`
+(serves UI + API on <http://localhost:8642>). `start-viator.bat` does the same by
+double-click. Note these use the repo's `data/` folder, *not* the installed app's database.
+
+To work on the desktop shell itself, see [`desktop/CLAUDE.md`](desktop/CLAUDE.md):
+
+```bash
+npm run dev          # in one terminal
+npm run dev:desktop  # Electron window pointed at the Vite dev server
+npm run dist:desktop # build the installer into desktop/release/
+```
+
+### Moving an existing database into the desktop app
+
+Close both the app and any `npm start` / `.bat` server first, so SQLite checkpoints cleanly.
+Then copy `data\viator.db` (plus `viator.db-wal` and `viator.db-shm` if they exist) into
+`%APPDATA%\Viator\`.
 
 ## Layout
 
@@ -74,6 +97,11 @@ private. Delete `data/` to reset the app completely.
 shared/   pure DTOs, ISK formatting, paste parser (unit-tested)
 server/   Fastify API, SQLite, ESI client, SSO/PKCE, SDE updater, asset & price pipelines
 client/   React + Vite UI
+desktop/  Electron shell + Windows packaging
 ```
 
-Run `npm test` for the unit suites (formatting, paste parsing, asset classification).
+Run `npm test` for the unit suites (formatting, paste parsing, fit parsing, asset classification).
+
+## License
+
+MIT — see [LICENSE](LICENSE).

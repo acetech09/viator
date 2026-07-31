@@ -15,6 +15,9 @@
     "dev:server": "npm -w server run dev",
     "dev:client": "npm -w client run dev",
     "build": "npm -w shared run build && npm -w server run build && npm -w client run build",
+    "dev:desktop": "npm --prefix desktop run dev",
+    "build:desktop": "npm --prefix desktop run build",
+    "dist:desktop": "npm --prefix desktop run dist",
     "start": "npm -w server run start",
     "test": "npm -w shared run test && npm -w server run test",
     "typecheck": "npm -w shared run typecheck && npm -w server run typecheck && npm -w client run typecheck"

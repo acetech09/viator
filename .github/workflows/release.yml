@@ -1,0 +1,48 @@
+name: release
+
+# Tag a release with the same version as desktop/package.json, e.g.
+#   npm --prefix desktop version 0.2.1 --no-git-tag-version
+#   git commit -am "Release 0.2.1" && git tag v0.2.1 && git push --follow-tags
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Check the tag matches desktop/package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          version=$(node -p "require('./desktop/package.json').version")
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match desktop/package.json (v$version)."
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+      # Separate install tree: its postinstall fetches better-sqlite3 built for
+      # Electron's ABI, leaving the root workspace's Node-ABI copy alone.
+      - run: npm ci --prefix desktop
+      - run: npm --prefix desktop run build
+
+      - name: Build and publish the installer
+        working-directory: desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --publish always

@@ -1,13 +1,26 @@
 # server — Fastify API + pipelines
 
 ESM (`type: module`); relative imports end in `.js`. Dev via `tsx watch`, prod via
-compiled `dist/`. Entry: `src/index.ts` (opens+migrates DB, registers routes, kicks off
-`startSde()` in the background, serves `client/dist` only when `NODE_ENV=production`).
+compiled `dist/`.
+
+- `src/server.ts` — **`startServer()`**, the whole boot sequence (opens+migrates DB, registers
+  routes, kicks off `startSde()` in the background, serves `CLIENT_DIST` only when
+  `NODE_ENV=production`, then listens). Returns `{ app, close() }` and lets `listen` errors
+  reject, so the caller owns the lifecycle. `close()` shuts Fastify down and closes the DB.
+- `src/index.ts` — the CLI wrapper around it (`npm start`, `tsx watch`, the `.bat` launchers):
+  calls `startServer()` and maps SIGINT/SIGTERM to `close()`. The Electron shell in `desktop/`
+  imports `startServer()` directly instead of running this file.
 
 ## Config — `src/config.ts`
 
 All constants: ports (8642), `COMPATIBILITY_DATE` (pinned ESI date — bump deliberately),
 ESI/SSO/SDE/image URLs, `SSO_SCOPES`, `SSO_REDIRECT`, default hub (Jita 4-4 / The Forge).
+
+**Three values are env-overridable** so the packaged desktop app can relocate them:
+`DATA_DIR` (`VIATOR_DATA_DIR` — `DB_PATH` and the SDE temp zip follow it), `CLIENT_DIST`
+(`VIATOR_CLIENT_DIST`) and `APP_VERSION` (`VIATOR_APP_VERSION`, reported in the ESI
+User-Agent). Unset in web mode, where the repo-relative fallbacks apply. They are read at
+module-evaluation time, so anything setting them must do so **before** importing this module.
 
 ## Database — `src/db/`
 

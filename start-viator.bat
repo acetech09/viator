@@ -3,6 +3,10 @@ setlocal
 rem Launch Viator locally. Double-click this file to start the app.
 rem It builds on first run, starts the server on http://localhost:8642,
 rem and opens your browser. Close this window to stop the server.
+rem
+rem This is the run-from-source path and uses the database in this folder's
+rem data\ directory. The installed desktop app is separate and keeps its own
+rem database in %APPDATA%\Viator. Only one of them can hold port 8642 at a time.
 
 cd /d "%~dp0"
 title Viator server

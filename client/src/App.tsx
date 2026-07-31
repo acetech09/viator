@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { api } from './api';
+import { desktop } from './desktop';
+import { useToast } from './toast';
 import { TitleBar } from './components/TitleBar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ListsPage } from './pages/ListsPage';
@@ -13,6 +16,14 @@ export function App() {
     queryFn: api.sdeStatus,
     refetchInterval: (q) => (q.state.data?.ready ? false : 1500),
   });
+
+  // Desktop builds download updates in the background and apply them on quit.
+  const toast = useToast();
+  useEffect(() => {
+    return desktop()?.onUpdateReady((version) => {
+      toast(`Viator ${version} downloaded — restart to apply.`, 'success');
+    });
+  }, [toast]);
 
   if (!sde.data) {
     return (

@@ -1,18 +1,23 @@
 # Viator — EVE Online shopping-list manager
 
-Single-user, locally-hosted web app. Build EVE shopping lists, price them against the
+Single-user, locally-run app. Build EVE shopping lists, price them against the
 market, copy them into the in-game Multibuy window, and subtract items you already own
 (via authorized characters' assets).
+
+**Shipped as a Windows desktop app** (Electron + NSIS, auto-updating from GitHub Releases)
+that runs the same local server inside itself. The plain web mode is still fully supported and
+is the dev loop.
 
 ## Stack & layout
 
 Node 22 + TypeScript, npm-workspaces monorepo. **SQLite** (better-sqlite3) for storage,
-**Fastify** server, **React + Vite** client. One SQLite file at `data/viator.db`.
+**Fastify** server, **React + Vite** client, **Electron** shell.
 
 ```
 shared/   pure DTOs, ISK formatting, paste parser — the only unit-tested layer   → shared/CLAUDE.md
 server/   Fastify API, SQLite, ESI client, SSO, SDE updater, asset/price pipelines → server/CLAUDE.md
 client/   React + Vite UI                                                          → client/CLAUDE.md
+desktop/  Electron shell + electron-builder packaging (NOT a workspace)            → desktop/CLAUDE.md
 ```
 
 Read the workspace's own `CLAUDE.md` before editing it — each documents its files and gotchas.
@@ -22,15 +27,22 @@ Read the workspace's own `CLAUDE.md` before editing it — each documents its fi
 | Task | Command |
 | --- | --- |
 | Dev (server :8642 + Vite :5173, both hot-reload) | `npm run dev` |
+| Dev in the Electron window (run `npm run dev` first) | `npm run dev:desktop` |
 | Build everything | `npm run build` |
 | Prod (single process, UI+API on :8642) | `npm start` — **requires `NODE_ENV=production`** or it won't serve the built UI |
 | Tests (shared + server, vitest) | `npm test` |
 | Typecheck all | `npm run typecheck` |
+| Build the desktop bundle (after `npm run build`) | `npm run build:desktop` |
+| Build the Windows installer | `npm run dist:desktop` → `desktop/release/` |
 | Double-click launcher (build-if-needed → prod → browser) | `start-viator.bat` |
 | Double-click launcher (always rebuild → prod → browser; use after code changes) | `rebuild-viator.bat` |
 
 `npm run dev` proxies `/api` and `/sso` from Vite → :8642. The SSO callback is always
 `http://localhost:8642/sso/callback` in both dev and prod.
+
+**Where the database lives depends on how you launched.** Web mode (`npm run dev`, `npm start`,
+the `.bat` launchers) uses the repo's `data/`; the desktop app uses `%APPDATA%\Viator`. They are
+separate databases — see the README if you want to move one across.
 
 ## Cross-cutting conventions (easy to get wrong)
 
@@ -45,6 +57,10 @@ Read the workspace's own `CLAUDE.md` before editing it — each documents its fi
   `COMPATIBILITY_DATE`). Bump that constant deliberately after testing new behavior; omitting
   it selects the *oldest* API behavior.
 - Refresh tokens are stored **plaintext** in the DB (acceptable for single-user localhost).
+- **Server paths are injectable.** `server/src/config.ts` reads `VIATOR_DATA_DIR`,
+  `VIATOR_CLIENT_DIST` and `VIATOR_APP_VERSION`, falling back to the repo layout when unset.
+  Only the desktop shell sets them. `server/src/server.ts` exports `startServer()` (returns
+  `{ app, close() }`, lets `listen` errors reject); `index.ts` is just the CLI wrapper.
 - "Existing stock" deduction is a **non-destructive view**: displayed qty = stored qty −
   owned. The stored list is never mutated. Owned qty sums two toggleable sources per list —
   API asset filter rows and manual asset pastes (see `server/src/assets/owned.ts`).
@@ -74,6 +90,8 @@ Read the workspace's own `CLAUDE.md` before editing it — each documents its fi
 | ISK formatting / Multibuy / paste parsing | `shared/src/{format,pasteParser}.ts` |
 | UI state, routing, SDE splash gate | `client/src/App.tsx`, `client/src/api.ts` |
 | Item fuzzy search | `client/src/hooks/useTypesIndex.ts` |
+| Desktop app: window, lifecycle, packaging, auto-update | `desktop/` (start with `desktop/CLAUDE.md`) — `src/main.ts`, `electron-builder.yml`, `.github/workflows/release.yml` |
+| Anything the desktop shell tells the UI (update notices) | `desktop/src/preload.cts` → `client/src/desktop.ts` (`window.viatorDesktop`, undefined in a browser) |
 
 ## Feature status
 
@@ -96,6 +114,12 @@ netted / **Transport** = destination netted only), a **hauling check** (right-pa
 the hauler's cargo → a closable "Missing items" left-panel tab diffs it against the Transport
 view, falling back to Purchase, then the raw list — all client-side), SSO character auth,
 per-zone default filter locations.
+
+**Desktop packaging is built and verified**: the Electron shell boots the embedded server,
+stores its database in `%APPDATA%\Viator`, serves the UI from `resources/client`, holds a
+single-instance lock, shuts down cleanly (WAL checkpointed), and `electron-builder` produces a
+working NSIS installer. Releases publish to GitHub Releases from a tag; electron-updater
+downloads in the background and installs on quit.
 
 The only path not verified against live servers is a real character login + asset fetch
 (needs the user's own EVE developer app). Everything around it is covered: SSO URL/token
