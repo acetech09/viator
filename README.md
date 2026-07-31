@@ -1,11 +1,8 @@
 # Viator
 
-A local tool for managing **EVE Online** shopping lists: build lists, price them against the
-market, copy them straight into the in-game Multibuy window, and subtract items you already
+A local tool for managing **EVE Online** shopping lists: build lists, price them,
+copy them straight into the in-game Multibuy window, and subtract items you already
 own at a station or structure.
-
-Everything runs on your own machine. There is no server to sign up for and no account —
-the only network traffic is to CCP's own APIs.
 
 ## Install (Windows)
 
@@ -13,8 +10,7 @@ Download **`Viator-Setup-x.y.z.exe`** from the
 [latest release](https://github.com/acetech09/viator/releases/latest) and run it. It installs
 for the current user only, so there is no admin prompt, and it starts Viator when it finishes.
 
-Windows SmartScreen will warn you the first time, because the installer isn't code-signed
-(a certificate costs several hundred a year for a free tool). Choose **More info → Run anyway**.
+Windows SmartScreen will warn you the first time. Choose **More info → Run anyway**.
 
 Viator checks for updates on launch, downloads them in the background, and applies them the
 next time you close the app. You'll see a "restart to apply" notice when one is ready.
