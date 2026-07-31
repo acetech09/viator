@@ -18,13 +18,11 @@ On first launch it downloads the parts of the EVE Static Data Export it needs (i
 groups, categories — around 23 MB). That takes a few seconds and only repeats when CCP
 publishes a new build.
 
-## Data & privacy
+## Privacy
 
 Nothing leaves your machine except calls to CCP's APIs. The desktop app keeps everything in
 one SQLite database at **`%APPDATA%\Viator\viator.db`**; running from source uses `data/viator.db`
-in the project folder instead. Refresh tokens are stored there in plain text — acceptable for a
-single-user local app, but keep the folder to yourself. Delete the database to reset Viator
-completely.
+in the project folder instead.
 
 ## Running from source
 
