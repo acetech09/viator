@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { type PricedGroup } from '@viator/shared';
 import { api } from '../api';
 import { useToast } from '../toast';
+import { useConfirm } from '../confirm';
 import { useInvalidateList } from '../hooks/useInvalidateList';
 import { QtyInput } from './QtyInput';
 import { CostVolume } from './CostVolume';
@@ -28,6 +29,7 @@ export function GroupManager({
   totalGroups: number;
 }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const [renaming, setRenaming] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
 
@@ -162,14 +164,16 @@ export function GroupManager({
           <button
             className="btn icon small danger"
             title="Delete group and its items"
-            onClick={() => {
+            onClick={async () => {
               // Deleting the very last group returns the list to the flat, ungrouped state and
               // KEEPS its items (they become ungrouped) rather than deleting them.
-              const msg =
+              const message =
                 totalGroups === 1
                   ? `Delete group "${g.name}"? Its items are kept as an ungrouped list.`
                   : `Delete group "${g.name}" and its items?`;
-              if (window.confirm(msg)) remove.mutate(g.id);
+              if (await confirm({ title: 'Delete group', message, confirmLabel: 'Delete group' })) {
+                remove.mutate(g.id);
+              }
             }}
           >
             ✕

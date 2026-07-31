@@ -588,6 +588,11 @@ tr.covered .item-icon { opacity: 0.4; filter: grayscale(1); }
 .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px; background: var(--metal); border-bottom: 1px solid var(--border); border-radius: 10px 10px 0 0; }
 .modal-body { padding: 8px 16px; overflow: auto; flex: 1; }
 .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--border); }
+/* Confirm dialog (src/confirm.tsx) — the in-app stand-in for window.confirm. Narrower than
+   the bucket picker and never scrolls: it holds one sentence. */
+.confirm-modal { max-width: 420px; }
+.confirm-message { padding: 18px 16px; line-height: 1.5; overflow: visible; }
+
 .basic-hangar-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; }
 .bucket-row { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--border); }
 .bucket-row:last-child { border-bottom: none; }

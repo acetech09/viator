@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { desktop } from './desktop';
 import { ToastProvider } from './toast';
+import { ConfirmProvider } from './confirm';
 import './theme.css';
 
 // In the Electron shell the window has no native caption bar and Windows draws the caption
@@ -21,7 +22,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ToastProvider>
-          <App />
+          <ConfirmProvider>
+            <App />
+          </ConfirmProvider>
         </ToastProvider>
       </BrowserRouter>
     </QueryClientProvider>

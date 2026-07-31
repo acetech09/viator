@@ -85,6 +85,15 @@ UI is the unmodified React client, served over HTTP exactly as in `npm start`.
     accelerators its roles registered, so `wireShortcuts()` re-adds reload (F5 / Ctrl+R) and
     devtools (F12 / Ctrl+Shift+I) via `before-input-event`. Text editing keys are unaffected —
     Chromium handles those below the menu layer.
+- **Native modals leave the window unfocused — the UI must never open one.** Dismissing a
+  renderer-triggered `window.confirm`/`alert`/`prompt` hands OS activation back to the window but
+  leaves the webContents' focus controller deactivated, so the whole page behaves as if it were
+  in the background: text selection paints in the inactive grey, the caret stops blinking, and
+  keystrokes go nowhere until the user alt-tabs away and back. A window with no native caption
+  bar (`titleBarStyle: 'hidden'`, above) makes this more likely. The client renders confirms
+  in-page instead (`client/src/confirm.tsx`) — don't reintroduce a native dialog from the
+  renderer. `dialog.*` from **main** (e.g. `showErrorBox` in `startEmbeddedServer`) is fine; it
+  is the renderer-initiated ones that strand focus.
 - **Nothing but the app itself loads in the window.** The `will-navigate` guard allows only
   `localhost`/`127.0.0.1` and sends everything else to the system browser. `*.eveonline.com`
   used to be allowed for the in-window login and is deliberately no longer.

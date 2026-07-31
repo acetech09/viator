@@ -10,7 +10,7 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   `types-index`, `characters`, `settings`, `sde-status`, `asset-status`, `locations/:id`,
   `filters/:id/:zone`, `filter-buckets/:listId/:charId/:locId/:zone`, `asset-pastes/:id/:zone`,
   `default-locations`. (`zone` is `'purchase'|'destination'` — existing-stock is split per zone.)
-- `main.tsx` — providers (QueryClient, Router, `ToastProvider`).
+- `main.tsx` — providers (QueryClient, Router, `ToastProvider`, `ConfirmProvider`).
 - `App.tsx` — **gates the whole app on `sde-status`** (splash until `ready`), then TitleBar +
   routes wrapped in `ErrorBoundary`. Routes: `/lists`, `/lists/:id`, `/settings`. Also calls
   `useAutoRefreshAssets()` — the once-per-load ESI asset warm-up. It lives here, not in the
@@ -32,6 +32,16 @@ imported by name. Dark theme in `src/theme.css` (CSS variables, no framework).
   height mirror `.titlebar`'s and have to change with it.
 - `api.ts` — the single typed fetch layer. All endpoints live here; add new ones here.
 - `toast.tsx` — `useToast()` for transient notifications.
+- `confirm.tsx` — `useConfirm()` returns a promise-based confirm dialog
+  (`if (await confirm({ title, message, confirmLabel })) …`), rendered in-page on the shared
+  `.modal` chrome (`.confirm-modal`/`.confirm-message`). Escape and the backdrop cancel; the
+  confirm button is focused on open, so Enter activates it.
+  **Never use `window.confirm`/`alert`/`prompt` anywhere in this client.** Dismissing a native
+  dialog leaves the Electron window's webContents with its focus controller deactivated: every
+  text field in the app then renders as if the window were in the background — inactive grey
+  selection, dead caret, keystrokes dropped — until the user alt-tabs away and back. Rendering
+  the prompt inside the page avoids the native modal, and therefore the bug, entirely. Callers
+  today: delete list (`ListsPage`), delete group (`GroupManager`), delete fit (`AddFitsTab`).
 - `hooks/useAssetRefresh.ts` — the ESI asset pull (mutation + `asset-status` query + cooldown
   countdown), shared by `RefreshAssetsButton` and `App`'s `useAutoRefreshAssets()`.
 - `hooks/useInvalidateList.ts` — `useInvalidateList(listId)` returns the standard

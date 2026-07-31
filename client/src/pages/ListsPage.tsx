@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ListOverview, ListOverviewEntry } from '@viator/shared';
 import { api } from '../api';
 import { useToast } from '../toast';
+import { useConfirm } from '../confirm';
 import { EditableText } from '../components/EditableText';
 import { ItemIcon } from '../components/ItemIcon';
 import { IskAmount, VolAmount } from '../components/CostVolume';
@@ -101,6 +102,7 @@ export function ListsPage() {
   const qc = useQueryClient();
   const nav = useNavigate();
   const toast = useToast();
+  const confirm = useConfirm();
   const lists = useQuery({ queryKey: ['lists'], queryFn: api.lists });
 
   const [query, setQuery] = useState('');
@@ -182,8 +184,13 @@ export function ListsPage() {
             onOpen={() => nav(`/lists/${l.id}`)}
             onRename={(name) => rename.mutate({ id: l.id, name })}
             onDuplicate={() => duplicate.mutate(l.id)}
-            onDelete={() => {
-              if (confirm(`Delete list "${l.name}"? This cannot be undone.`)) remove.mutate(l.id);
+            onDelete={async () => {
+              const ok = await confirm({
+                title: 'Delete list',
+                message: `Delete "${l.name}"? This cannot be undone.`,
+                confirmLabel: 'Delete list',
+              });
+              if (ok) remove.mutate(l.id);
             }}
           />
         ))}

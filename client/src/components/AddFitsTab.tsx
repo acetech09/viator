@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { type PricedGroup, type PricedList } from '@viator/shared';
 import { api } from '../api';
 import { useToast } from '../toast';
+import { useConfirm } from '../confirm';
 import { useInvalidateList } from '../hooks/useInvalidateList';
 import { QtyInput } from './QtyInput';
 import { EyeIcon } from './EyeIcon';
@@ -72,6 +73,7 @@ function FitManager({
   onEdit: (fit: PricedGroup) => void;
 }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const refresh = useInvalidateList(listId);
 
   const toggle = useMutation({
@@ -135,8 +137,13 @@ function FitManager({
             <button
               className="btn icon small danger"
               title="Delete fit and its items"
-              onClick={() => {
-                if (window.confirm(`Delete fit "${f.name}" and its items?`)) remove.mutate(f.id);
+              onClick={async () => {
+                const ok = await confirm({
+                  title: 'Delete fit',
+                  message: `Delete fit "${f.name}" and its items?`,
+                  confirmLabel: 'Delete fit',
+                });
+                if (ok) remove.mutate(f.id);
               }}
             >
               ✕
