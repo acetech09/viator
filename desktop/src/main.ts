@@ -24,7 +24,9 @@ const UPDATE_CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000;
  * height mirror `.titlebar` in `client/src/theme.css` (`--bg-elev` / `--text`, 46px) — they are
  * duplicated because Windows draws the overlay itself and can't read the page's CSS.
  */
-const TITLE_BAR_OVERLAY = { color: '#161b22', symbolColor: '#d6dae0', height: 46 };
+// The page's titlebar is a vertical gradient (`--metal`); the overlay only takes a flat
+// color, so this is its midpoint.
+const TITLE_BAR_OVERLAY = { color: '#1c1b1e', symbolColor: '#d6d3ca', height: 46 };
 
 /** `--dev-url=…` points the window at the Vite dev server and skips the embedded server. */
 const devUrl = process.argv.find((a) => a.startsWith('--dev-url='))?.split('=')[1];
