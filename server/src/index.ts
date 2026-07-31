@@ -1,4 +1,4 @@
-// CLI entry point: `npm start` / `tsx watch src/index.ts` / the .bat launchers.
+// CLI entry point: `npm start` / `tsx watch src/index.ts`.
 // The desktop shell calls startServer() directly instead of running this file.
 import { startServer } from './server.js';
 

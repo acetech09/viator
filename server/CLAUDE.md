@@ -7,9 +7,9 @@ compiled `dist/`.
   routes, kicks off `startSde()` in the background, serves `CLIENT_DIST` only when
   `NODE_ENV=production`, then listens). Returns `{ app, close() }` and lets `listen` errors
   reject, so the caller owns the lifecycle. `close()` shuts Fastify down and closes the DB.
-- `src/index.ts` — the CLI wrapper around it (`npm start`, `tsx watch`, the `.bat` launchers):
-  calls `startServer()` and maps SIGINT/SIGTERM to `close()`. The Electron shell in `desktop/`
-  imports `startServer()` directly instead of running this file.
+- `src/index.ts` — the CLI wrapper around it (`npm start`, `tsx watch`): calls `startServer()`
+  and maps SIGINT/SIGTERM to `close()`. The Electron shell in `desktop/` imports
+  `startServer()` directly instead of running this file.
 
 ## Config — `src/config.ts`
 

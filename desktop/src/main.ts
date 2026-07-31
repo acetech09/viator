@@ -71,7 +71,7 @@ async function reportStartupFailure(err: unknown): Promise<void> {
     dialog.showErrorBox(
       isViator ? 'Viator is already running' : 'Port 8642 is in use',
       isViator
-        ? 'Another copy of Viator already has port 8642 — that may be a start-viator.bat window or a "npm start" left running. Close it, then start Viator again.'
+        ? 'Another copy of Viator already has port 8642 — that may be a development server left running. Close it, then start Viator again.'
         : 'Another program is using port 8642, which Viator needs for EVE SSO. Close that program, then start Viator again.',
     );
   } else {

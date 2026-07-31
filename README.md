@@ -70,8 +70,8 @@ npm run dev          # server on :8642, Vite UI on http://localhost:5173
 ```
 
 For a production-style single-process run, `npm run build` then `npm start`
-(serves UI + API on <http://localhost:8642>). `start-viator.bat` does the same by
-double-click. Note these use the repo's `data/` folder, *not* the installed app's database.
+(serves UI + API on <http://localhost:8642>). Note these use the repo's `data/` folder,
+*not* the installed app's database, and only one of them can hold port 8642 at a time.
 
 To work on the desktop shell itself, see [`desktop/CLAUDE.md`](desktop/CLAUDE.md):
 
@@ -83,7 +83,7 @@ npm run dist:desktop # build the installer into desktop/release/
 
 ### Moving an existing database into the desktop app
 
-Close both the app and any `npm start` / `.bat` server first, so SQLite checkpoints cleanly.
+Close both the app and any `npm run dev` / `npm start` server first, so SQLite checkpoints cleanly.
 Then copy `data\viator.db` (plus `viator.db-wal` and `viator.db-shm` if they exist) into
 `%APPDATA%\Viator\`.
 

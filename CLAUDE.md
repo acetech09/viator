@@ -34,15 +34,13 @@ Read the workspace's own `CLAUDE.md` before editing it — each documents its fi
 | Typecheck all | `npm run typecheck` |
 | Build the desktop bundle (after `npm run build`) | `npm run build:desktop` |
 | Build the Windows installer | `npm run dist:desktop` → `desktop/release/` |
-| Double-click launcher (build-if-needed → prod → browser) | `start-viator.bat` |
-| Double-click launcher (always rebuild → prod → browser; use after code changes) | `rebuild-viator.bat` |
 
 `npm run dev` proxies `/api` and `/sso` from Vite → :8642. The SSO callback is always
 `http://localhost:8642/sso/callback` in both dev and prod.
 
-**Where the database lives depends on how you launched.** Web mode (`npm run dev`, `npm start`,
-the `.bat` launchers) uses the repo's `data/`; the desktop app uses `%APPDATA%\Viator`. They are
-separate databases — see the README if you want to move one across.
+**Where the database lives depends on how you launched.** Web mode (`npm run dev`, `npm start`)
+uses the repo's `data/`; the desktop app uses `%APPDATA%\Viator`. They are separate databases —
+see the README if you want to move one across. Only one of them can hold port 8642 at a time.
 
 ## Cross-cutting conventions (easy to get wrong)
 
