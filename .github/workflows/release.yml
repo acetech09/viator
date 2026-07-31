@@ -41,8 +41,41 @@ jobs:
       - run: npm ci --prefix desktop
       - run: npm --prefix desktop run build
 
+      # Create the release up front. Left to itself, electron-builder uploads the
+      # installer and its blockmap concurrently, both find no release, and both try to
+      # create one — the loser's upload is dropped and the run still exits 0.
+      - name: Ensure the GitHub release exists
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
+            gh release create "$GITHUB_REF_NAME" \
+              --title "Viator ${GITHUB_REF_NAME#v}" \
+              --generate-notes \
+              --verify-tag
+
       - name: Build and publish the installer
         working-directory: desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --win --publish always
+
+      # electron-builder reports success even when an upload was lost, so check that the
+      # two files an installed app needs actually landed.
+      - name: Verify the release assets
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(node -p "require('./desktop/package.json').version")
+          assets=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
+          echo "$assets"
+          for required in "Viator-Setup-$version.exe" "latest.yml"; do
+            if ! grep -qx "$required" <<<"$assets"; then
+              echo "::error::$required is missing from release $GITHUB_REF_NAME"
+              exit 1
+            fi
+          done
